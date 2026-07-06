@@ -11,6 +11,8 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell, Legend,
 } from 'recharts'
+import RevenueChart from '../../components/charts/RevenueChart'
+import TicketScansChart from '../../components/charts/TicketScansChart'
 
 const COLORS = ['#0D6EFD', '#E83E8C', '#198754', '#FFC107', '#6f42c1', '#fd7e14']
 
@@ -19,6 +21,7 @@ export default function AdminDashboard() {
   const { user }   = useAuth()
 
   const [stats, setStats]     = useState({})
+  const [graphStats, setGraphStats] = useState({ revenus_7j: [], scans_7j: [] })
   const [users, setUsers]     = useState([])
   const [evenements, setEvenements] = useState([])
   const [loading, setLoading] = useState(true)
@@ -27,13 +30,15 @@ export default function AdminDashboard() {
   useEffect(() => {
     Promise.all([
       api.get('/admin/statistiques'),
+      api.get('/admin/statistiques-graphiques'),
       api.get('/admin/users'),
       api.get('/admin/evenements'),
     ])
-      .then(([s, u, e]) => {
+      .then(([s, g, u, e]) => {
         setStats(s.data)
+        setGraphStats(g.data)
         setUsers(u.data)
-        setEvenements(e.data)
+        setEvenements(e.data.data || e.data)
       })
       .catch(() => toast.error('Erreur chargement'))
       .finally(() => setLoading(false))
@@ -127,6 +132,25 @@ export default function AdminDashboard() {
           {statCards.map((card, i) => (
             <StatCard key={i} card={card} index={i} hasLink={true} />
           ))}
+        </div>
+
+        {/* ── Graphiques avancés ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 400px), 1fr))', gap: 20, marginBottom: 20 }}>
+          <div style={{ backgroundColor: cardBg, border: `1px solid ${borderCol}`, borderRadius: 16, padding: '16px 12px', minWidth: 0 }}>
+            <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <i className="bi bi-cash-coin" style={{ color: '#10b981' }} />
+              Revenus des 7 derniers jours
+            </h3>
+            <RevenueChart data={graphStats.revenus_7j} />
+          </div>
+
+          <div style={{ backgroundColor: cardBg, border: `1px solid ${borderCol}`, borderRadius: 16, padding: '16px 12px', minWidth: 0 }}>
+            <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <i className="bi bi-qr-code-scan" style={{ color: '#3b82f6' }} />
+              Tickets Scannés (7 derniers jours)
+            </h3>
+            <TicketScansChart data={graphStats.scans_7j} />
+          </div>
         </div>
 
         {/* ── Graphiques ligne 1 ── */}

@@ -147,6 +147,28 @@ export default function Profil() {
                 </div>
               </div>
 
+              {user?.identifiant && (
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Identifiant (Organisateur)</label>
+                  <div style={{ position: 'relative', display: 'flex', gap: 8 }}>
+                    <div style={{ position: 'relative', flex: 1 }}>
+                      <i className="bi bi-hash" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                      <input type="text" value={user.identifiant} readOnly style={{ ...inputStyle, paddingLeft: 42, backgroundColor: isDark ? '#1a1d27' : '#f1f5f9', cursor: 'not-allowed', color: 'var(--text-muted)' }} />
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        navigator.clipboard.writeText(user.identifiant);
+                        toast.success('Identifiant copié !');
+                      }} 
+                      style={{ padding: '0 16px', borderRadius: 10, border: 'none', background: 'rgba(13,110,253,0.1)', color: '#0D6EFD', cursor: 'pointer', fontWeight: 600 }}
+                    >
+                      <i className="bi bi-copy" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Sexe</label>
                 <div style={{ position: 'relative' }}>

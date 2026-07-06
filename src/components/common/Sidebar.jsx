@@ -6,6 +6,7 @@ import toast from 'react-hot-toast'
 const navByRole = {
   admin: [
     { to: '/admin',            icon: 'bi-grid-1x2-fill',    label: 'Vue d\'ensemble' },
+    { to: '/admin/contacts',   icon: 'bi-envelope',         label: 'Messages Contact' },
     { 
       icon: 'bi-people-fill', label: 'Utilisateurs',
       subItems: [
@@ -15,20 +16,30 @@ const navByRole = {
         { to: '/admin/users?role=participant',  label: 'Participants' },
       ]
     },
-    { to: '/admin/evenements', icon: 'bi-calendar-event',    label: 'Événements'     },
-    { to: '/admin/evenements-actifs', icon: 'bi-calendar-check', label: 'Événements Actifs' },
+    { 
+      icon: 'bi-calendar-event', label: 'Événements',
+      subItems: [
+        { to: '/admin/evenements',        label: 'Tous les événements' },
+        { to: '/admin/evenements-actifs', label: 'Événements Actifs' },
+        { to: '/admin/evenements?status=en_attente', label: 'En attente' },
+      ]
+    },
     { to: '/admin/mes-tickets', icon: 'bi-ticket-perforated', label: 'Mes Tickets' },
     { to: '/admin/logs',       icon: 'bi-terminal-fill',     label: 'Logs Système'   },
-    { to: '/parametres#apparence', icon: 'bi-gear-fill',         label: 'Paramètres'     },
   ],
   organisateur: [
     { to: '/organisateur',            icon: 'bi-grid-1x2-fill',  label: 'Vue d\'ensemble' },
-    { to: '/organisateur/evenements', icon: 'bi-calendar-event',  label: 'Mes Événements'  },
-    { to: '/organisateur/evenements-actifs', icon: 'bi-calendar-range', label: 'Événements Actifs' },
+    { 
+      icon: 'bi-calendar-event', label: 'Événements',
+      subItems: [
+        { to: '/organisateur/evenements',        label: 'Mes Événements' },
+        { to: '/organisateur/evenements-actifs', label: 'Événements Actifs' },
+        { to: '/organisateur/evenements?status=en_attente', label: 'En attente' },
+      ]
+    },
     { to: '/organisateur/scans', icon: 'bi-qr-code-scan', label: 'Suivi des Scans' },
     { to: '/organisateur/agents',     icon: 'bi-person-badge',    label: 'Mes Agents'      },
     { to: '/organisateur/mes-tickets', icon: 'bi-ticket-perforated', label: 'Mes Tickets' },
-    { to: '/parametres#apparence',    icon: 'bi-gear-fill',       label: 'Paramètres'      },
   ],
   agent: [
     { to: '/agent',         icon: 'bi-grid-1x2-fill', label: 'Vue d\'ensemble' },
@@ -36,7 +47,6 @@ const navByRole = {
     { to: '/agent/scanner', icon: 'bi-qr-code-scan',  label: 'Terminal Scanner' },
     { to: '/agent/historique', icon: 'bi-clock-history', label: 'Historique Complet' },
     { to: '/agent/mes-tickets', icon: 'bi-ticket-perforated', label: 'Mes Tickets' },
-    { to: '/parametres#apparence', icon: 'bi-gear-fill',     label: 'Paramètres'       },
   ],
 }
 
@@ -60,6 +70,8 @@ export default function Sidebar({ isOpen, onClose }) {
   useEffect(() => {
     if (location.pathname.includes('/users')) {
       setOpenMenu('Utilisateurs')
+    } else if (location.pathname.includes('/evenements')) {
+      setOpenMenu('Événements')
     }
   }, [location.pathname])
 
@@ -198,13 +210,17 @@ export default function Sidebar({ isOpen, onClose }) {
         </nav>
 
         {/* Footer */}
-        <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
-          <div style={{
-            fontSize: 11, color: 'var(--text-muted)',
-            textAlign: 'center', marginBottom: 10,
-            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-          }}>
-          </div>
+        <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <NavLink
+            to="/parametres#apparence"
+            onClick={onClose}
+            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+            style={{ marginBottom: 4 }}
+          >
+            <i className="bi bi-gear-fill" />
+            <span>Paramètres</span>
+          </NavLink>
+
           <button
             onClick={handleLogout}
             className="btn btn-outline-danger w-100"

@@ -5,8 +5,10 @@ import { ThemeProvider } from './context/ThemeContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import PageLoader from './components/common/PageLoader'
 import RouteLoader from './components/common/RouteLoader'
+import ScrollToTop from './components/common/ScrollToTop'
 
 // ── Pages Publiques ──────────────────────────────────────────────
+const LandingPage = lazy(() => import('./pages/public/LandingPage'))
 const Home        = lazy(() => import('./pages/public/Home'))
 const Login       = lazy(() => import('./pages/public/Login'))
 const Register    = lazy(() => import('./pages/public/Register'))
@@ -15,12 +17,17 @@ const Reservation = lazy(() => import('./pages/public/Reservation'))
 const NotFound    = lazy(() => import('./pages/public/NotFound'))
 const ServerError = lazy(() => import('./pages/public/ServerError'))
 const CompteBloque = lazy(() => import('./pages/public/CompteBloque'))
+const ForcePasswordChange = lazy(() => import('./pages/public/ForcePasswordChange'))
+const ForgotPassword = lazy(() => import('./pages/public/ForgotPassword'))
+const ResetPassword = lazy(() => import('./pages/public/ResetPassword'))
 
 // ── Admin ────────────────────────────────────────────────────────
 const AdminDashboard   = lazy(() => import('./pages/admin/Dashboard'))
 const AdminUsers       = lazy(() => import('./pages/admin/Users'))
 const AdminEvenements  = lazy(() => import('./pages/admin/Evenements'))
 const AdminLogs        = lazy(() => import('./pages/admin/Logs'))
+const VerifySecondPassword = lazy(() => import('./pages/admin/VerifySecondPassword'))
+const AdminContacts    = lazy(() => import('./pages/admin/Contacts'))
 
 // ── Shared ───────────────────────────────────────────────────────
 const EvenementsActifs = lazy(() => import('./pages/shared/EvenementsActifs'))
@@ -43,10 +50,27 @@ const Profil     = lazy(() => import('./pages/participant/Profil'))
 const Parametres = lazy(() => import('./pages/participant/Parametres'))
 
 // ── Guard ────────────────────────────────────────────────────────
-function PrivateRoute({ children, roles }) {
-  const { isAuthenticated, user } = useAuth()
+function PrivateRoute({ children, roles, allowTempPassword = false }) {
+  const { isAuthenticated, user, secondPasswordVerified } = useAuth()
   if (!isAuthenticated) return <Navigate to="/login" replace />
+  
+  if (user?.is_temp_password && !allowTempPassword) {
+    return <Navigate to="/force-password-change" replace />
+  }
+
   if (roles && !roles.includes(user?.role)) return <Navigate to="/" replace />
+  
+  if (user?.role === 'admin' && !secondPasswordVerified) {
+    return (
+      <>
+        <div style={{ pointerEvents: 'none', userSelect: 'none', height: '100vh', overflow: 'hidden' }}>
+          {children}
+        </div>
+        <VerifySecondPassword />
+      </>
+    )
+  }
+
   return children
 }
 
@@ -55,15 +79,24 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <BrowserRouter>
+          <ScrollToTop />
           <Toaster position="top-right" />
           <Suspense fallback={<PageLoader />}>
             <RouteLoader />
             <Routes>
               {/* Publiques */}
-              <Route path="/"                    element={<Home />} />
+              <Route path="/"                    element={<LandingPage />} />
+              <Route path="/evenements"          element={<Home />} />
               <Route path="/login"               element={<Login />} />
               <Route path="/register"            element={<Register />} />
-              <Route path="/compte-bloque"        element={<CompteBloque />} />
+              <Route path="/forgot-password"     element={<ForgotPassword />} />
+              <Route path="/reset-password"      element={<ResetPassword />} />
+              <Route path="/compte-bloque"       element={<CompteBloque />} />
+              <Route path="/force-password-change" element={
+                <PrivateRoute allowTempPassword={true}>
+                  <ForcePasswordChange />
+                </PrivateRoute>
+              } />
               <Route path="/evenements/:id"      element={<EventDetail />} />
               <Route path="/reservation/:id"     element={<Reservation />} />
 
@@ -73,21 +106,10 @@ export default function App() {
                   <AdminDashboard />
                 </PrivateRoute>
               }/>
-              <Route path="/admin/users" element={
-                <PrivateRoute roles={['admin']}>
-                  <AdminUsers />
-                </PrivateRoute>
-              }/>
-              <Route path="/admin/evenements" element={
-                <PrivateRoute roles={['admin']}>
-                  <AdminEvenements />
-                </PrivateRoute>
-              }/>
-              <Route path="/admin/logs" element={
-                <PrivateRoute roles={['admin']}>
-                  <AdminLogs />
-                </PrivateRoute>
-              }/>
+              <Route path="/admin/users" element={<PrivateRoute roles={['admin']}><AdminUsers /></PrivateRoute>} />
+              <Route path="/admin/contacts" element={<PrivateRoute roles={['admin']}><AdminContacts /></PrivateRoute>} />
+              <Route path="/admin/evenements" element={<PrivateRoute roles={['admin']}><AdminEvenements /></PrivateRoute>} />
+              <Route path="/admin/logs" element={<PrivateRoute roles={['admin']}><AdminLogs /></PrivateRoute>} />
               <Route path="/admin/evenements-actifs" element={
                 <PrivateRoute roles={['admin']}>
                   <EvenementsActifs />

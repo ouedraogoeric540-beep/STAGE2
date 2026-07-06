@@ -58,31 +58,31 @@ export default function OrgScans() {
             <div className="sp-spinner" style={{ margin: '0 auto' }} />
           </div>
         ) : statsEvents.length > 0 ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 24, marginBottom: 32 }}>
+          <div className="event-grid" style={{ marginBottom: 32 }}>
             {statsEvents.map((evStat) => {
               const pct = evStat.capacite_max > 0 ? Math.round((evStat.total_scannes / evStat.capacite_max) * 100) : 0
               return (
-                <div key={evStat.id} className="card" style={{ padding: 24 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-                    <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.3 }}>
+                <div key={evStat.id} className="card" style={{ padding: '16px 14px', borderRadius: 16 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.3, wordBreak: 'break-word', paddingRight: 8 }}>
                       {evStat.titre}
                     </div>
-                    <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--brand-color)' }}>
+                    <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--brand-color)', flexShrink: 0 }}>
                       {pct}%
                     </div>
                   </div>
                   
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 600 }}>
-                    <span><i className="bi bi-person-check" style={{ marginRight: 6 }}/>{evStat.total_scannes} scannés</span>
-                    <span>Capacité: {evStat.capacite_max}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 600 }}>
+                    <span style={{ display: 'flex', alignItems: 'center' }}><i className="bi bi-person-check" style={{ marginRight: 4 }}/>{evStat.total_scannes}</span>
+                    <span>Cap: {evStat.capacite_max}</span>
                   </div>
 
-                  <div style={{ width: '100%', height: 10, background: isDark ? '#1e293b' : '#e2e8f0', borderRadius: 6, overflow: 'hidden' }}>
+                  <div style={{ width: '100%', height: 8, background: isDark ? '#1e293b' : '#e2e8f0', borderRadius: 4, overflow: 'hidden' }}>
                     <div style={{ 
                       width: `${pct}%`, 
                       height: '100%', 
                       background: 'linear-gradient(90deg, #3b82f6, #6366f1)', 
-                      borderRadius: 6,
+                      borderRadius: 4,
                       transition: 'width 1s cubic-bezier(0.4, 0, 0.2, 1)'
                     }} />
                   </div>
@@ -150,7 +150,7 @@ export default function OrgScans() {
           display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
         }}>
           <div className="card" style={{
-            width: '100%', maxWidth: 450,
+            width: '100%', maxWidth: 450, maxHeight: '90vh', display: 'flex', flexDirection: 'column',
             background: isDark ? '#1e293b' : '#fff',
             border: `1px solid ${isDark ? '#334155' : '#e2e8f0'}`,
             borderRadius: 20, overflow: 'hidden',
@@ -159,47 +159,47 @@ export default function OrgScans() {
           }}>
             <button 
               onClick={() => setSelectedScan(null)}
-              style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 24, zIndex: 10 }}
+              style={{ position: 'absolute', top: 12, right: 12, background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 22, zIndex: 10 }}
             >
               <i className="bi bi-x-circle-fill" />
             </button>
 
-            <div style={{ padding: 30, textAlign: 'center', borderBottom: `1px solid ${isDark ? '#334155' : '#e2e8f0'}` }}>
-              <div style={{ marginBottom: 16 }}>
+            <div style={{ padding: '20px 20px 16px', textAlign: 'center', borderBottom: `1px solid ${isDark ? '#334155' : '#e2e8f0'}`, flexShrink: 0 }}>
+              <div style={{ marginBottom: 12 }}>
                 {getStatusBadge(selectedScan.resultat)}
               </div>
-              <h3 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: 'var(--text-primary)' }}>Détails du Scan</h3>
-              <div style={{ color: 'var(--text-muted)', fontSize: 14, marginTop: 8 }}>
+              <h3 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: 'var(--text-primary)' }}>Détails du Scan</h3>
+              <div style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>
                 {new Date(selectedScan.date_scan).toLocaleString()}
               </div>
             </div>
             
-            <div style={{ padding: 24 }}>
-              <div style={{ display: 'grid', gap: 16 }}>
-                <div style={{ background: isDark ? '#0f172a' : '#f8fafd', padding: 16, borderRadius: 12 }}>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Événement</div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{selectedScan.evenement?.titre || 'Inconnu'}</div>
+            <div style={{ padding: 20, overflowY: 'auto' }}>
+              <div style={{ display: 'grid', gap: 10 }}>
+                <div style={{ background: isDark ? '#0f172a' : '#f8fafd', padding: '10px 16px', borderRadius: 10 }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>Événement</div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{selectedScan.evenement?.titre || 'Inconnu'}</div>
                 </div>
 
-                <div style={{ background: isDark ? '#0f172a' : '#f8fafd', padding: 16, borderRadius: 12 }}>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Agent (Scanner)</div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{selectedScan.agent?.name || 'Inconnu'}</div>
-                  <div style={{ fontSize: 14, color: 'var(--text-muted)' }}>{selectedScan.agent?.email || ''}</div>
+                <div style={{ background: isDark ? '#0f172a' : '#f8fafd', padding: '10px 16px', borderRadius: 10 }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>Agent (Scanner)</div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{selectedScan.agent?.name || 'Inconnu'}</div>
+                  {selectedScan.agent?.email && <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{selectedScan.agent.email}</div>}
                 </div>
 
-                <div style={{ background: isDark ? '#0f172a' : '#f8fafd', padding: 16, borderRadius: 12 }}>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Participant</div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{selectedScan.ticket?.participant?.nom || 'Non renseigné'}</div>
-                  <div style={{ fontSize: 14, color: 'var(--text-muted)' }}>{selectedScan.ticket?.participant?.email || ''}</div>
+                <div style={{ background: isDark ? '#0f172a' : '#f8fafd', padding: '10px 16px', borderRadius: 10 }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>Participant</div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{selectedScan.ticket?.participant?.nom || 'Non renseigné'}</div>
+                  {selectedScan.ticket?.participant?.email && <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{selectedScan.ticket.participant.email}</div>}
                 </div>
 
-                <div style={{ background: isDark ? '#0f172a' : '#f8fafd', padding: 16, borderRadius: 12 }}>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Catégorie du Ticket</div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{selectedScan.ticket?.categorie?.nom || 'Standard'}</div>
+                <div style={{ background: isDark ? '#0f172a' : '#f8fafd', padding: '10px 16px', borderRadius: 10 }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>Catégorie du Ticket</div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{selectedScan.ticket?.categorie?.nom || 'Standard'}</div>
                 </div>
 
-                <div style={{ background: isDark ? '#0f172a' : '#f8fafd', padding: 16, borderRadius: 12 }}>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Code QR unique</div>
+                <div style={{ background: isDark ? '#0f172a' : '#f8fafd', padding: '10px 16px', borderRadius: 10 }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>Code QR unique</div>
                   <div style={{ fontSize: 13, fontFamily: 'monospace', color: 'var(--text-primary)', wordBreak: 'break-all' }}>{selectedScan.qr_code}</div>
                 </div>
               </div>

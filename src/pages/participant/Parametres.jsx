@@ -67,7 +67,14 @@ export default function Parametres() {
   }
 
   // --- EDITION PROFIL ---
+  const [loadingProfile, setLoadingProfile] = useState(false)
+  const [loadingPassword, setLoadingPassword] = useState(false)
+  const [loadingSecondPassword, setLoadingSecondPassword] = useState(false)
+
   const [isEditingProfile, setIsEditingProfile] = useState(false)
+  const [isEditingPassword, setIsEditingPassword] = useState(false)
+  const [isEditingSecondPassword, setIsEditingSecondPassword] = useState(false)
+
   const [profileForm, setProfileForm] = useState({
     name: user?.name || '',
     prenom: user?.prenom || '',
@@ -75,7 +82,14 @@ export default function Parametres() {
     email: user?.email || '',
     telephone: user?.telephone || ''
   })
-  const [loadingProfile, setLoadingProfile] = useState(false)
+  const [passwordForm, setPasswordForm] = useState({
+    current_password: '',
+    password: '',
+    password_confirmation: ''
+  })
+  const [secondPasswordForm, setSecondPasswordForm] = useState({ current_password: '', password: '', password_confirmation: '' })
+  
+  const [showPasswords, setShowPasswords] = useState(false)
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault()
@@ -102,15 +116,6 @@ export default function Parametres() {
   }
 
   // --- EDITION MOT DE PASSE ---
-  const [isEditingPassword, setIsEditingPassword] = useState(false)
-  const [showPasswords, setShowPasswords] = useState(false)
-  const [passwordForm, setPasswordForm] = useState({
-    current_password: '',
-    password: '',
-    password_confirmation: ''
-  })
-  const [loadingPassword, setLoadingPassword] = useState(false)
-
   const handleUpdatePassword = async (e) => {
     e.preventDefault()
     if (passwordForm.password !== passwordForm.password_confirmation) {
@@ -131,6 +136,30 @@ export default function Parametres() {
       }
     } finally {
       setLoadingPassword(false)
+    }
+  }
+
+  const handleUpdateSecondPassword = async (e) => {
+    e.preventDefault()
+    if (secondPasswordForm.password !== secondPasswordForm.password_confirmation) {
+      return toast.error('Les mots de passe ne correspondent pas.')
+    }
+    setLoadingSecondPassword(true)
+    try {
+      await api.put('/admin/second-password', secondPasswordForm)
+      toast.success('Second mot de passe mis à jour avec succès')
+      setSecondPasswordForm({ current_password: '', password: '', password_confirmation: '' })
+      setIsEditingSecondPassword(false)
+    } catch (error) {
+      const msg = error.response?.data?.message || 'Erreur lors de la mise à jour'
+      if (error.response?.data?.errors) {
+        const firstError = Object.values(error.response.data.errors)[0][0]
+        toast.error(firstError)
+      } else {
+        toast.error(msg)
+      }
+    } finally {
+      setLoadingSecondPassword(false)
     }
   }
 
@@ -467,6 +496,45 @@ export default function Parametres() {
                       </button>
                     </div>
                   </form>
+                )}
+
+                {user?.role === 'admin' && (
+                  <>
+                    <hr style={{ borderTop: `1px solid ${borderColor}`, margin: '24px 0', opacity: 0.5 }} />
+                    {!isEditingSecondPassword ? (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                        <div>
+                          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>Second mot de passe (Admin)</div>
+                          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>Gérer le mot de passe de vérification admin</div>
+                        </div>
+                        <button onClick={() => setIsEditingSecondPassword(true)} style={{ padding: '8px 16px', background: 'transparent', border: `1px solid ${borderColor}`, borderRadius: 8, color: 'var(--text-primary)', fontWeight: 600, cursor: 'pointer' }}>
+                          Modifier
+                        </button>
+                      </div>
+                    ) : (
+                      <form onSubmit={handleUpdateSecondPassword} style={{ marginBottom: 24, padding: 20, background: surf.bg, borderRadius: 12, border: `1px solid ${borderColor}` }}>
+                        <h4 style={{ margin: '0 0 16px 0', fontSize: 15, color: 'var(--text-primary)' }}>Changer le second mot de passe</h4>
+                        <div style={{ marginBottom: 12, position: 'relative' }}>
+                          <input type={showPasswords ? "text" : "password"} placeholder="Second mot de passe actuel *" required value={secondPasswordForm.current_password} onChange={e => setSecondPasswordForm({...secondPasswordForm, current_password: e.target.value})} style={{ width: '100%', padding: '10px 40px 10px 14px', borderRadius: 8, border: `1px solid ${borderColor}`, background: cardBg, color: 'var(--text-primary)', outline: 'none' }} />
+                          <i className={`bi bi-eye${showPasswords ? '' : '-slash'}`} onClick={() => setShowPasswords(!showPasswords)} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: 'var(--text-muted)' }} />
+                        </div>
+                        <div style={{ marginBottom: 12, position: 'relative' }}>
+                          <input type={showPasswords ? "text" : "password"} placeholder="Nouveau second mot de passe *" required value={secondPasswordForm.password} onChange={e => setSecondPasswordForm({...secondPasswordForm, password: e.target.value})} style={{ width: '100%', padding: '10px 40px 10px 14px', borderRadius: 8, border: `1px solid ${borderColor}`, background: cardBg, color: 'var(--text-primary)', outline: 'none' }} />
+                          <i className={`bi bi-eye${showPasswords ? '' : '-slash'}`} onClick={() => setShowPasswords(!showPasswords)} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: 'var(--text-muted)' }} />
+                        </div>
+                        <div style={{ marginBottom: 16, position: 'relative' }}>
+                          <input type={showPasswords ? "text" : "password"} placeholder="Confirmer le nouveau second mot de passe *" required value={secondPasswordForm.password_confirmation} onChange={e => setSecondPasswordForm({...secondPasswordForm, password_confirmation: e.target.value})} style={{ width: '100%', padding: '10px 40px 10px 14px', borderRadius: 8, border: `1px solid ${borderColor}`, background: cardBg, color: 'var(--text-primary)', outline: 'none' }} />
+                          <i className={`bi bi-eye${showPasswords ? '' : '-slash'}`} onClick={() => setShowPasswords(!showPasswords)} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: 'var(--text-muted)' }} />
+                        </div>
+                        <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+                          <button type="button" onClick={() => setIsEditingSecondPassword(false)} style={{ padding: '8px 16px', background: 'transparent', border: 'none', color: 'var(--text-muted)', fontWeight: 600, cursor: 'pointer' }}>Annuler</button>
+                          <button type="submit" disabled={loadingSecondPassword} style={{ padding: '8px 16px', background: currentPalette.primary, color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: loadingSecondPassword ? 'not-allowed' : 'pointer', opacity: loadingSecondPassword ? 0.7 : 1 }}>
+                            {loadingSecondPassword ? 'Chargement...' : 'Mettre à jour'}
+                          </button>
+                        </div>
+                      </form>
+                    )}
+                  </>
                 )}
 
                 <hr style={{ borderTop: `1px solid ${borderColor}`, margin: '0 0 24px 0', opacity: 0.5 }} />

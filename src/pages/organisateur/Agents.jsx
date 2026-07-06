@@ -3,7 +3,9 @@ import Layout from '../../components/common/Layout'
 import { useTheme } from '../../context/ThemeContext'
 import api from '../../api/axios'
 import ActionMenu from '../../components/common/ActionMenu'
+import ConfirmModal from '../../components/common/ConfirmModal'
 import CustomSelect from '../../components/common/CustomSelect'
+import DataTable from '../../components/common/DataTable'
 import toast from 'react-hot-toast'
 
 export default function OrgAgents() {
@@ -20,6 +22,10 @@ export default function OrgAgents() {
 
   const [form, setForm]     = useState({ name: '', prenom: '', sexe: '', email: '', password: '', telephone: '' })
   const [affect, setAffect] = useState({ agent_id: '', evenement_ids: [] })
+  const [showPassword, setShowPassword] = useState(false)
+  const [errors, setErrors] = useState({})
+  
+  const renderError = (field) => errors[field] ? <div style={{ color: '#ef4444', fontSize: 11, marginTop: 4 }}>{errors[field][0]}</div> : null;
   const [rechercheAffect, setRechercheAffect] = useState('')
 
   const charger = (showLoading = true) => {
@@ -57,12 +63,14 @@ export default function OrgAgents() {
 
   const ouvrirCreer = () => {
     setEditingId(null)
+    setErrors({})
     setForm({ name: '', prenom: '', sexe: '', email: '', password: '', telephone: '' })
     setShowModal(true)
   }
 
   const ouvrirEditer = (a) => {
     setEditingId(a.id)
+    setErrors({})
     setForm({ name: a.name, prenom: a.prenom || '', sexe: a.sexe || '', email: a.email, password: '', telephone: a.telephone || '' })
     setShowModal(true)
   }
@@ -70,6 +78,7 @@ export default function OrgAgents() {
   const sauvegarderAgent = async (e) => {
     e.preventDefault()
     setSaving(true)
+    setErrors({})
     try {
       if (editingId) {
         await api.put(`/agents/${editingId}`, form)
@@ -81,17 +90,17 @@ export default function OrgAgents() {
       setShowModal(false)
       charger()
     } catch (err) {
-      const errors = err.response?.data?.errors
-      if (errors) Object.values(errors).forEach((e) => toast.error(e[0]))
+      const apiErrors = err.response?.data?.errors
+      if (apiErrors) {
+        setErrors(apiErrors)
+        toast.error('Veuillez corriger les erreurs signalées')
+      }
       else toast.error(err.response?.data?.message || 'Erreur')
     } finally { setSaving(false) }
   }
 
   const affecterAgent = async (e) => {
     e.preventDefault()
-    if (!affect.evenement_ids || affect.evenement_ids.length === 0) {
-      return toast.error('Veuillez sélectionner au moins un événement.')
-    }
     setSaving(true)
     try {
       await api.post('/agents/affecter', affect)
@@ -257,49 +266,60 @@ export default function OrgAgents() {
               </div>
 
               {/* VUE TABLEAU (DESKTOP) */}
-              <table className="d-none d-md-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ borderBottom: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}` }}>
-                    {['Agent', 'Email', 'Téléphone', 'Affectation', 'Statut', 'Actions'].map((h) => (
-                      <th key={h} style={{ padding: '14px 16px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {agents.map((agent) => (
-                    <tr key={agent.id} style={{ borderBottom: `1px solid ${isDark ? '#2a2d3e' : '#f0f0f0'}` }}>
-                      <td style={{ padding: '14px 16px' }}>
+              <div className="d-none d-md-block">
+                <DataTable
+                  loading={loading}
+                  data={agents}
+                  columns={[
+                    {
+                      header: 'Agent',
+                      render: (agent) => (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                           <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#19875430', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#198754', fontWeight: 700, fontSize: 14 }}>
                             {agent.name?.charAt(0).toUpperCase()}
                           </div>
                           <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 14 }}>{agent.name}</span>
                         </div>
-                      </td>
-                      <td style={{ padding: '14px 16px', fontSize: 13, color: 'var(--text-secondary)' }}>{agent.email}</td>
-                      <td style={{ padding: '14px 16px', fontSize: 13, color: 'var(--text-secondary)' }}>{agent.telephone || '—'}</td>
-                      <td style={{ padding: '14px 16px' }}>
-                        {agent.affectations_count > 0 ? (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <span style={{ padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: '#0D6EFD20', color: '#0D6EFD' }}>
-                              <i className="bi bi-link-45deg"></i> {agent.affectations_count}
-                            </span>
-                            <button onClick={() => setDetailsAgent(agent)} style={{ padding: '5px 10px', borderRadius: 8, fontSize: 12, fontWeight: 600, background: 'var(--primary)', color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
-                              <i className="bi bi-eye-fill" style={{ fontSize: 11 }} /> Détails
-                            </button>
-                          </div>
-                        ) : (
-                          <span style={{ padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: isDark ? '#333' : '#e9ecef', color: 'var(--text-muted)' }}>
-                            Non affecté
+                      )
+                    },
+                    {
+                      header: 'Email',
+                      accessor: 'email',
+                      cellStyle: { fontSize: 13, color: 'var(--text-secondary)' }
+                    },
+                    {
+                      header: 'Téléphone',
+                      render: (agent) => <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{agent.telephone || '—'}</span>
+                    },
+                    {
+                      header: 'Affectation',
+                      render: (agent) => agent.affectations_count > 0 ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: '#0D6EFD20', color: '#0D6EFD' }}>
+                            <i className="bi bi-link-45deg"></i> {agent.affectations_count}
                           </span>
-                        )}
-                      </td>
-                      <td style={{ padding: '14px 16px' }}>
+                          <button onClick={() => setDetailsAgent(agent)} style={{ padding: '5px 10px', borderRadius: 8, fontSize: 12, fontWeight: 600, background: 'var(--primary)', color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <i className="bi bi-eye-fill" style={{ fontSize: 11 }} /> Détails
+                          </button>
+                        </div>
+                      ) : (
+                        <span style={{ padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: isDark ? '#333' : '#e9ecef', color: 'var(--text-muted)' }}>
+                          Non affecté
+                        </span>
+                      )
+                    },
+                    {
+                      header: 'Statut',
+                      render: (agent) => (
                         <span style={{ padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: agent.statut ? '#19875420' : '#DC354520', color: agent.statut ? '#198754' : '#DC3545' }}>
                           {agent.statut ? 'Actif' : 'Inactif'}
                         </span>
-                      </td>
-                      <td style={{ padding: '14px 16px' }}>
+                      )
+                    },
+                    {
+                      header: 'Actions',
+                      align: 'right',
+                      render: (agent) => (
                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                           <ActionMenu 
                             options={[
@@ -311,11 +331,12 @@ export default function OrgAgents() {
                             ]}
                           />
                         </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      )
+                    }
+                  ]}
+                  emptyMessage="Aucun agent créé pour le moment"
+                />
+              </div>
             </div>
           )}
         </div>
@@ -323,43 +344,86 @@ export default function OrgAgents() {
 
       {/* Modal Créer agent */}
       {showModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-          <div style={{ backgroundColor: isDark ? '#1e2130' : '#fff', borderRadius: 20, padding: 32, width: '100%', maxWidth: 440, border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}` }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div className="custom-scrollbar" style={{ backgroundColor: isDark ? '#1e2130' : '#fff', borderRadius: 20, padding: 24, width: '100%', maxWidth: 440, maxHeight: '90vh', overflowY: 'auto', border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}` }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
               <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Créer un agent</h3>
               <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 20 }}><i className="bi bi-x-lg" /></button>
             </div>
             <form onSubmit={sauvegarderAgent}>
-              {[
-                { label: 'Nom', name: 'name', type: 'text' },
-                { label: 'Prénom', name: 'prenom', type: 'text' },
-                { label: 'Email', name: 'email', type: 'email' },
-                { label: 'Téléphone', name: 'telephone', type: 'tel' },
-                { label: 'Mot de passe', name: 'password', type: 'password' },
-              ].map((f) => (
-                <div key={f.name} style={{ marginBottom: 16 }}>
-                  <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>{f.label}</label>
-                  <input type={f.type} value={form[f.name]} onChange={(e) => setForm({ ...form, [f.name]: e.target.value })}
-                    required={f.name !== 'telephone' && f.name !== 'prenom' && !(editingId && f.name === 'password')} style={inputStyle} 
-                    placeholder={editingId && f.name === 'password' ? '(Laissez vide pour conserver)' : ''} />
+              <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>Nom</label>
+                  <input type="text" value={form.name} onChange={(e) => {
+                    setForm({ ...form, name: e.target.value })
+                    if (errors.name) setErrors({ ...errors, name: null })
+                  }} required style={{ ...inputStyle, padding: '10px 14px', width: '100%', ...(errors.name ? { borderColor: '#ef4444' } : {}) }} />
+                  {renderError('name')}
                 </div>
-              ))}
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>Sexe</label>
-                <CustomSelect 
-                  value={form.sexe} 
-                  onChange={(val) => setForm({ ...form, sexe: val })}
-                  placeholder="Sélectionner"
-                  options={[
-                    { value: 'M', label: 'Homme (M)' },
-                    { value: 'F', label: 'Femme (F)' },
-                  ]}
-                  style={{ marginTop: 4, padding: '12px 16px' }}
-                />
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>Prénom</label>
+                  <input type="text" value={form.prenom} onChange={(e) => {
+                    setForm({ ...form, prenom: e.target.value })
+                    if (errors.prenom) setErrors({ ...errors, prenom: null })
+                  }} style={{ ...inputStyle, padding: '10px 14px', width: '100%', ...(errors.prenom ? { borderColor: '#ef4444' } : {}) }} />
+                  {renderError('prenom')}
+                </div>
               </div>
-              <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-                <button type="button" onClick={() => setShowModal(false)} style={{ flex: 1, padding: '11px', background: 'transparent', border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`, borderRadius: 10, color: 'var(--text-primary)', cursor: 'pointer', fontWeight: 600 }}>Annuler</button>
-                <button type="submit" disabled={saving} style={{ flex: 1, padding: '11px', background: 'var(--primary)', border: 'none', borderRadius: 10, color: '#fff', cursor: 'pointer', fontWeight: 700 }}>
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>Email</label>
+                <input type="email" value={form.email} onChange={(e) => {
+                  setForm({ ...form, email: e.target.value })
+                  if (errors.email) setErrors({ ...errors, email: null })
+                }} required style={{ ...inputStyle, padding: '10px 14px', width: '100%', ...(errors.email ? { borderColor: '#ef4444' } : {}) }} />
+                {renderError('email')}
+              </div>
+
+              <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>Téléphone</label>
+                  <input type="tel" value={form.telephone} onChange={(e) => {
+                    setForm({ ...form, telephone: e.target.value })
+                    if (errors.telephone) setErrors({ ...errors, telephone: null })
+                  }} style={{ ...inputStyle, padding: '10px 14px', width: '100%', ...(errors.telephone ? { borderColor: '#ef4444' } : {}) }} />
+                  {renderError('telephone')}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>Sexe</label>
+                  <CustomSelect 
+                    value={form.sexe} 
+                    onChange={(val) => {
+                      setForm({ ...form, sexe: val })
+                      if (errors.sexe) setErrors({ ...errors, sexe: null })
+                    }}
+                    placeholder="Sélectionner"
+                    options={[
+                      { value: 'M', label: 'Homme (M)' },
+                      { value: 'F', label: 'Femme (F)' },
+                    ]}
+                    style={{ padding: '10px 14px', ...(errors.sexe ? { borderColor: '#ef4444' } : {}) }}
+                  />
+                  {renderError('sexe')}
+                </div>
+              </div>
+
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>Mot de passe</label>
+                <div style={{ position: 'relative' }}>
+                  <input type={showPassword ? 'text' : 'password'} value={form.password} onChange={(e) => {
+                    setForm({ ...form, password: e.target.value })
+                    if (errors.password) setErrors({ ...errors, password: null })
+                  }}
+                    required={!editingId} style={{ ...inputStyle, padding: '10px 36px 10px 14px', width: '100%', ...(errors.password ? { borderColor: '#ef4444' } : {}) }} 
+                    placeholder={editingId ? '(Laissez vide pour conserver)' : ''} />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 16 }}>
+                    <i className={`bi ${showPassword ? 'bi-eye-slash-fill' : 'bi-eye-fill'}`} />
+                  </button>
+                </div>
+                {renderError('password')}
+              </div>
+              <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+                <button type="button" onClick={() => setShowModal(false)} style={{ flex: 1, padding: '10px', background: 'transparent', border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`, borderRadius: 10, color: 'var(--text-primary)', cursor: 'pointer', fontWeight: 600 }}>Annuler</button>
+                <button type="submit" disabled={saving} style={{ flex: 1, padding: '10px', background: 'var(--primary)', border: 'none', borderRadius: 10, color: '#fff', cursor: 'pointer', fontWeight: 700 }}>
                   {saving ? 'Sauvegarde…' : (editingId ? 'Modifier' : 'Créer')}
                 </button>
               </div>
@@ -432,28 +496,15 @@ export default function OrgAgents() {
         </div>
       )}
 
-      {/* Modal Supprimer */}
-      {deleteId && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, animation: 'fadeIn 0.2s ease' }}>
-          <div style={{ backgroundColor: isDark ? '#1e2130' : '#fff', borderRadius: 24, padding: 32, width: '100%', maxWidth: 400, textAlign: 'center', border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`, boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
-            <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#dc354515', color: '#dc3545', fontSize: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-              <i className="bi bi-exclamation-triangle" />
-            </div>
-            <h3 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 12px' }}>Confirmer la suppression</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.5, margin: '0 0 24px' }}>
-              Êtes-vous sûr de vouloir supprimer cet agent ? Cette action est irréversible.
-            </p>
-            <div style={{ display: 'flex', gap: 12 }}>
-              <button onClick={() => setDeleteId(null)} style={{ flex: 1, padding: '12px', borderRadius: 12, border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`, background: isDark ? '#161b2d' : '#f8fafd', color: 'var(--text-primary)', fontWeight: 600, cursor: 'pointer' }}>
-                Annuler
-              </button>
-              <button onClick={confirmerSuppression} disabled={saving} style={{ flex: 1, padding: '12px', borderRadius: 12, border: 'none', background: '#dc3545', color: '#fff', fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer' }}>
-                {saving ? 'Suppression…' : 'Oui, supprimer'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        isOpen={!!deleteId}
+        title="Confirmer la suppression"
+        message="Êtes-vous sûr de vouloir supprimer cet agent ? Cette action est irréversible."
+        onConfirm={confirmerSuppression}
+        onCancel={() => setDeleteId(null)}
+        loading={saving}
+        isDanger={true}
+      />
 
       {/* Modal Détails Affectations */}
       {detailsAgent && (

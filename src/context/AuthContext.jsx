@@ -11,8 +11,8 @@ export function AuthProvider({ children }) {
 
   const [token, setToken] = useState(() => localStorage.getItem('token'))
 
-  const login = async (email, password) => {
-    const res = await api.post('/login', { email, password })
+  const login = async (login, password) => {
+    const res = await api.post('/login', { login, password })
     const { token, user } = res.data
     localStorage.setItem('token', token)
     localStorage.setItem('user', JSON.stringify(user))
@@ -31,16 +31,27 @@ export function AuthProvider({ children }) {
     return user
   }
 
+  const [secondPasswordVerified, setSecondPasswordVerified] = useState(() => {
+    return sessionStorage.getItem('secondPasswordVerified') === 'true'
+  })
+
+  const verifySecondPassword = () => {
+    sessionStorage.setItem('secondPasswordVerified', 'true')
+    setSecondPasswordVerified(true)
+  }
+
   const logout = async () => {
     try { await api.post('/logout') } catch (_) {}
     localStorage.removeItem('token')
     localStorage.removeItem('user')
+    sessionStorage.removeItem('secondPasswordVerified')
     setToken(null)
     setUser(null)
+    setSecondPasswordVerified(false)
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, isAuthenticated: !!token, setUser }}>
+    <AuthContext.Provider value={{ user, token, login, register, logout, isAuthenticated: !!token, setUser, secondPasswordVerified, verifySecondPassword }}>
       {children}
     </AuthContext.Provider>
   )

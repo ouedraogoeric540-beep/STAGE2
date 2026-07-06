@@ -11,18 +11,25 @@ export default function Login() {
   const { isDark } = useTheme()
   const navigate   = useNavigate()
 
-  const [form, setForm]       = useState({ email: '', password: '' })
+  const [form, setForm]       = useState({ login: '', password: '' })
   const [showPwd, setShowPwd] = useState(false)
   const [remember, setRemember] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [errors, setErrors]   = useState({})
 
-  const handle = (e) => setForm({ ...form, [e.target.name]: e.target.value })
+  const handle = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value })
+    if (errors[e.target.name]) setErrors({ ...errors, [e.target.name]: null })
+  }
+  
+  const renderError = (field) => errors[field] ? <div style={{ color: '#ef4444', fontSize: 11, marginTop: 4 }}>{errors[field][0]}</div> : null;
 
   const submit = async (e) => {
     e.preventDefault()
+    setErrors({})
     setLoading(true)
     try {
-      const user = await login(form.email, form.password)
+      const user = await login(form.login, form.password)
       toast.success('Connexion réussie !')
       if (user.role === 'admin')             navigate('/admin')
       else if (user.role === 'organisateur') navigate('/organisateur')
@@ -30,6 +37,11 @@ export default function Login() {
       else                                   navigate('/mes-tickets')
     } catch (err) {
       const data = err.response?.data
+      if (data?.errors) {
+        setErrors(data.errors)
+        toast.error('Veuillez corriger les erreurs signalées.')
+        return
+      }
       // Compte bloqué → redirection vers la page dédiée
       if (data?.compte_bloque) {
         navigate('/compte-bloque', {
@@ -86,17 +98,18 @@ export default function Login() {
           </p>
 
           <form onSubmit={submit}>
-            {/* Email */}
+            {/* Identifiant ou Email */}
             <div style={{ marginBottom: 10 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 2 }}>Adresse email</label>
+              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 2 }}>Email ou Identifiant</label>
               <div style={{ position: 'relative' }}>
-                <i className="bi bi-envelope-fill" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                <i className="bi bi-person-fill" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                 <input
-                  type="email" name="email" value={form.email} onChange={handle}
-                  style={{ ...inputStyle, paddingLeft: 36 }}
-                  placeholder="vous@exemple.com" required
+                  type="text" name="login" value={form.login} onChange={handle}
+                  style={{ ...inputStyle, paddingLeft: 36, ...(errors.login ? { borderColor: '#ef4444' } : {}) }}
+                  placeholder="vous@exemple.com ou ORG-..." required
                 />
               </div>
+              {renderError('login')}
             </div>
 
             {/* Mot de passe */}
@@ -107,7 +120,7 @@ export default function Login() {
                 <input
                   type={showPwd ? 'text' : 'password'}
                   name="password" value={form.password} onChange={handle}
-                  style={{ ...inputStyle, paddingLeft: 42, paddingRight: 42 }}
+                  style={{ ...inputStyle, paddingLeft: 42, paddingRight: 42, ...(errors.password ? { borderColor: '#ef4444' } : {}) }}
                   placeholder="••••••••" required
                 />
                 <button
@@ -120,6 +133,7 @@ export default function Login() {
                   <i className={`bi ${showPwd ? 'bi-eye-slash' : 'bi-eye'}`} />
                 </button>
               </div>
+              {renderError('password')}
             </div>
 
             {/* Remember + Forgot */}
@@ -135,9 +149,9 @@ export default function Login() {
                   Se souvenir de moi
                 </label>
               </div>
-              <a href="#" style={{ fontSize: 13, color: 'var(--brand-color)', textDecoration: 'none', fontWeight: 600 }}>
+              <Link to="/forgot-password" style={{ fontSize: 13, color: 'var(--brand-color)', textDecoration: 'none', fontWeight: 600 }}>
                 Mot de passe oublié ?
-              </a>
+              </Link>
             </div>
 
             {/* Bouton */}

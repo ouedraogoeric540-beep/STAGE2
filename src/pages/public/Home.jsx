@@ -1,9 +1,8 @@
-import { useState, useEffect, useMemo } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { useTheme } from '../../context/ThemeContext'
 import { useAuth } from '../../context/AuthContext'
-import ThemeToggle from '../../components/common/ThemeToggle'
-import Logo from '../../components/common/Logo'
+import PublicNavbar from '../../components/public/PublicNavbar'
 import Footer from '../../components/common/Footer'
 import api from '../../api/axios'
 import toast from 'react-hot-toast'
@@ -13,27 +12,15 @@ import EventCard from '../../components/public/EventCard'
 
 export default function Home() {
   const { isDark } = useTheme()
-  const { isAuthenticated, user, logout } = useAuth()
-  const navigate = useNavigate()
+  const { isAuthenticated, user } = useAuth()
 
   const [evenements, setEvenements] = useState([])
-  const [recherche, setRecherche]   = useState('')
-  const [loading, setLoading]       = useState(true)
-  const [scrolled, setScrolled]     = useState(false)
-  const [page, setPage]             = useState(1)
+  const [recherche, setRecherche] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalElements, setTotalElements] = useState(0)
   const [filterType, setFilterType] = useState('tous') // 'tous', 'gratuit', 'payant'
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60)
-    window.addEventListener('scroll', onScroll)
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
-  useEffect(() => {
-    setPage(1)
-  }, [recherche, filterType])
 
   useEffect(() => {
     setLoading(true)
@@ -55,96 +42,29 @@ export default function Home() {
         .catch(() => toast.error('Erreur lors du chargement des événements.'))
         .finally(() => setLoading(false))
     }, 300)
-    
+
     return () => clearTimeout(timeoutId)
   }, [page, recherche, filterType])
 
   const evenementPage = evenements
 
 
-  
+
   const getDashboardLink = () => {
     if (!isAuthenticated) return '/login'
-    if (user?.role === 'admin')        return '/admin'
+    if (user?.role === 'admin') return '/admin'
     if (user?.role === 'organisateur') return '/organisateur'
-    if (user?.role === 'agent')        return '/agent'
-    if (user?.role === 'participant')  return '/mes-tickets'
+    if (user?.role === 'agent') return '/agent'
+    if (user?.role === 'participant') return '/mes-tickets'
     return '/'
   }
 
-  const handleLogout = async () => {
-    await logout()
-    toast.success('Déconnexion réussie')
-    navigate('/')
-  }
 
   return (
     <div style={{ backgroundColor: isDark ? '#0f1117' : '#f0f2f5', minHeight: '100vh' }}>
 
       {/* ── Navbar ──────────────────────────────────────────── */}
-      <nav className="home-navbar" style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
-        height: 72, padding: '0 32px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        backgroundColor: scrolled
-          ? (isDark ? 'rgba(15,17,23,0.95)' : 'rgba(255,255,255,0.95)')
-          : 'transparent',
-        backdropFilter: scrolled ? 'blur(12px)' : 'none',
-        borderBottom: scrolled ? `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}` : 'none',
-        transition: 'all 0.3s ease',
-      }}>
-        <Logo size="sm" showTagline={false} />
-
-        <div className="home-nav-actions" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <ThemeToggle />
-          {isAuthenticated ? (
-            <>
-              <Link to={getDashboardLink()} className="home-btn-dash" style={{
-                background: 'var(--brand-color)',
-                borderRadius: 8, color: 'var(--brand-text)',
-                padding: '8px 16px',
-                textDecoration: 'none', fontWeight: 600,
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-              }}>
-                <i className="bi bi-speedometer2" />
-                <span className="d-none d-sm-inline">Dashboard</span>
-              </Link>
-              
-              <button onClick={handleLogout} className="home-btn-logout" style={{
-                background: 'rgba(220,53,69,0.15)',
-                border: '1px solid rgba(220,53,69,0.3)',
-                borderRadius: 8, color: '#DC3545',
-                padding: '8px 16px',
-                fontWeight: 600, cursor: 'pointer',
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-              }}>
-                <i className="bi bi-box-arrow-right" />
-                <span className="d-none d-sm-inline">Déconnexion</span>
-              </button>
-            </>
-          ) : (
-            <>
-              <Link to="/login" className="home-btn-login" style={{
-                color: 'var(--brand-color)',
-                border: '1px solid var(--brand-color)',
-                padding: '8px 16px',
-                borderRadius: 8,
-                textDecoration: 'none', fontWeight: 600,
-              }}>
-                Se connecter
-              </Link>
-              <Link to="/register" className="home-btn-register" style={{
-                background: 'var(--brand-color)',
-                padding: '8px 16px',
-                borderRadius: 8, color: 'var(--brand-text)',
-                textDecoration: 'none', fontWeight: 600,
-              }}>
-                S'inscrire
-              </Link>
-            </>
-          )}
-        </div>
-      </nav>
+      <PublicNavbar />
 
       {/* ── Hero ────────────────────────────────────────────── */}
       <section style={{
@@ -260,11 +180,11 @@ export default function Home() {
             )}
 
             <a href="#evenements" className="hero-btn" style={{
-                background: 'rgba(255,255,255,0.15)',
-                backdropFilter: 'blur(10px)',
-                border: '2px solid rgba(255,255,255,0.3)',
-                borderRadius: 12, color: '#fff',
-                textDecoration: 'none', fontWeight: 700
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(10px)',
+              border: '2px solid rgba(255,255,255,0.3)',
+              borderRadius: 12, color: '#fff',
+              textDecoration: 'none', fontWeight: 700
             }}>
               <i className="bi bi-calendar2-event" />
               Voir les événements
@@ -329,8 +249,8 @@ export default function Home() {
                     transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 8,
                     boxShadow: filterType === f.id ? '0 4px 12px rgba(13,110,253,0.2)' : 'none'
                   }}
-                  onMouseEnter={(e) => { if(filterType !== f.id) e.currentTarget.style.backgroundColor = isDark ? '#252839' : '#f8f9fa' }}
-                  onMouseLeave={(e) => { if(filterType !== f.id) e.currentTarget.style.backgroundColor = isDark ? '#1e2130' : '#ffffff' }}
+                  onMouseEnter={(e) => { if (filterType !== f.id) e.currentTarget.style.backgroundColor = isDark ? '#252839' : '#f8f9fa' }}
+                  onMouseLeave={(e) => { if (filterType !== f.id) e.currentTarget.style.backgroundColor = isDark ? '#1e2130' : '#ffffff' }}
                 >
                   <i className={`bi ${f.icon}`} />
                   {f.label}
@@ -459,36 +379,8 @@ export default function Home() {
           )}
         </div>
       </section>
-      {/* ── CTA ─────────────────────────────────────────────── */}
-      <section style={{
-        padding: '80px 24px', textAlign: 'center',
-        background: 'var(--brand-color)',
-      }}>
-        <h2 style={{ fontSize: 36, fontWeight: 800, color: 'var(--brand-text)', marginBottom: 12 }}>
-          Vous organisez des événements ?
-        </h2>
-        <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 16, marginBottom: 36 }}>
-          Contactez un administrateur SecurePass pour créer votre compte organisateur
-        </p>
-        
-         <a href="https://wa.me/22606248959"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            padding: '14px 40px',
-            background: '#fff', borderRadius: 12,
-            color: '#25D366', textDecoration: 'none',
-            fontWeight: 700, fontSize: 16,
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-          }}
-        >
-          <i className="bi bi-whatsapp" />
-          Nous contacter sur WhatsApp
-        </a>
-      </section>
-
       {/* ── Footer ──────────────────────────────────────────── */}
       <Footer />
     </div>
   )
-}
+}

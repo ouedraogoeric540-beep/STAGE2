@@ -5,6 +5,8 @@ import { useTheme } from '../../context/ThemeContext'
 import api from '../../api/axios'
 import ActionMenu from '../../components/common/ActionMenu'
 import CustomSelect from '../../components/common/CustomSelect'
+import ConfirmModal from '../../components/common/ConfirmModal'
+import DataTable from '../../components/common/DataTable'
 import toast from 'react-hot-toast'
 
 const ROLES = ['', 'admin', 'organisateur', 'agent']
@@ -25,7 +27,11 @@ export default function AdminUsers() {
   const [evenements, setEvenements] = useState([])
   const [affect, setAffect] = useState({ agent_id: '', evenement_ids: [] })
   const [form, setForm] = useState({ name: '', prenom: '', sexe: '', email: '', password: '', role: 'organisateur', telephone: '' })
+  const [showPassword, setShowPassword] = useState(false)
   const [saving, setSaving]   = useState(false)
+  const [errors, setErrors] = useState({})
+  
+  const renderError = (field) => errors[field] ? <div style={{ color: '#ef4444', fontSize: 11, marginTop: 4 }}>{errors[field][0]}</div> : null;
 
   const charger = (role = filtre, showLoading = true) => {
     if (showLoading) setLoading(true)
@@ -79,12 +85,14 @@ export default function AdminUsers() {
 
   const ouvrirCreer = () => {
     setEditingId(null)
+    setErrors({})
     setForm({ name: '', prenom: '', sexe: '', email: '', password: '', role: 'organisateur', telephone: '' })
     setShowModal(true)
   }
 
   const ouvrirEditer = (u) => {
     setEditingId(u.id)
+    setErrors({})
     setForm({ name: u.name, prenom: u.prenom || '', sexe: u.sexe || '', email: u.email, password: '', role: u.role, telephone: u.telephone || '' })
     setShowModal(true)
   }
@@ -107,6 +115,7 @@ export default function AdminUsers() {
   const sauvegarder = async (e) => {
     e.preventDefault()
     setSaving(true)
+    setErrors({})
     try {
       if (editingId) {
         await api.put(`/admin/users/${editingId}`, form)
@@ -118,8 +127,11 @@ export default function AdminUsers() {
       setShowModal(false)
       charger()
     } catch (err) {
-      const errors = err.response?.data?.errors
-      if (errors) Object.values(errors).forEach((e) => toast.error(e[0]))
+      const apiErrors = err.response?.data?.errors
+      if (apiErrors) {
+        setErrors(apiErrors)
+        toast.error('Veuillez corriger les erreurs signalées')
+      }
       else toast.error(err.response?.data?.message || 'Erreur')
     } finally { setSaving(false) }
   }
@@ -174,88 +186,89 @@ export default function AdminUsers() {
         </div>
 
         {/* Tableau */}
-        <div className="table-responsive" style={{ backgroundColor: isDark ? '#1e2130' : '#fff', borderRadius: 16, border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`, overflowX: 'auto' }}>
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: 60 }}>
-              <div style={{ width: 36, height: 36, border: '3px solid var(--border)', borderTopColor: '#0D6EFD', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto' }} />
-            </div>
-          ) : (
-            <div className="table-responsive">
-              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 800 }}>
-                <thead>
-                  <tr style={{ borderBottom: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}` }}>
-                    {['Utilisateur', 'Email', 'Téléphone', 'Rôle', 'Statut', 'Actions'].map((h) => (
-                      <th key={h} style={{ padding: '14px 16px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((u) => (
-                    <tr key={u.id} style={{ borderBottom: `1px solid ${isDark ? '#2a2d3e' : '#f0f0f0'}` }}>
-                      <td style={{ padding: '14px 16px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <div style={{ width: 36, height: 36, borderRadius: '50%', background: roleColor[u.role] || '#0D6EFD', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
-                            {u.name?.charAt(0).toUpperCase()}
-                          </div>
-                          <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 14 }}>{u.name}</span>
-                        </div>
-                      </td>
-                      <td style={{ padding: '14px 16px', fontSize: 13, color: 'var(--text-secondary)' }}>{u.email}</td>
-                      <td style={{ padding: '14px 16px', fontSize: 13, color: 'var(--text-secondary)' }}>{u.telephone || '—'}</td>
-                      <td style={{ padding: '14px 16px' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' }}>
-                          <span style={{ padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: `${roleColor[u.role]}20`, color: roleColor[u.role] }}>
-                            {u.role}
-                          </span>
-                          {u.role === 'agent' && (
-                            u.agent_evenements && u.agent_evenements.length > 0 ? (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-                                <span style={{ padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: '#0D6EFD20', color: '#0D6EFD' }}>
-                                  <i className="bi bi-link-45deg"></i> {u.agent_evenements.length}
-                                </span>
-                                <button onClick={() => setDetailsUser(u)} style={{ padding: '5px 10px', borderRadius: 8, fontSize: 12, fontWeight: 600, background: 'var(--primary)', color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
-                                  <i className="bi bi-eye-fill" style={{ fontSize: 11 }} /> Détails
-                                </button>
-                              </div>
-                            ) : (
-                              <span style={{ marginTop: 4, padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: isDark ? '#333' : '#e9ecef', color: 'var(--text-muted)' }}>
-                                Non affecté
-                              </span>
-                            )
-                          )}
-                        </div>
-                      </td>
-                      <td style={{ padding: '14px 16px' }}>
-                        <span style={{ padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: u.statut ? '#19875420' : '#DC354520', color: u.statut ? '#198754' : '#DC3545' }}>
-                          {u.statut ? 'Actif' : 'Inactif'}
-                        </span>
-                      </td>
-                      <td style={{ padding: '14px 16px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                          <ActionMenu 
-                            options={[
-                              { label: 'Affecter (Événement)', icon: 'bi-link', color: '#10b981', hidden: u.role !== 'agent', onClick: () => ouvrirAffecter(u) },
-                              { divider: true, hidden: u.role !== 'agent' },
-                              { label: 'Modifier', icon: 'bi-pencil-fill', color: '#3b82f6', onClick: () => ouvrirEditer(u) },
-                              { label: u.statut ? 'Désactiver' : 'Activer', icon: u.statut ? 'bi-slash-circle-fill' : 'bi-check-circle-fill', color: u.statut ? '#f59e0b' : '#10b981', onClick: () => toggle(u.id) },
-                              { label: 'Supprimer', icon: 'bi-trash-fill', color: '#ef4444', onClick: () => demanderSuppression(u.id) }
-                            ]}
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {users.length === 0 && (
-                <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
-                  <i className="bi bi-people" style={{ fontSize: 36, display: 'block', marginBottom: 8 }} />
-                  Aucun utilisateur trouvé
+        <DataTable
+          loading={loading}
+          data={users}
+          columns={[
+            {
+              header: 'Utilisateur',
+              render: (u) => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: roleColor[u.role] || '#0D6EFD', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
+                    {u.name?.charAt(0).toUpperCase()}
+                  </div>
+                  <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 14 }}>{u.name}</span>
                 </div>
-              )}
-            </div>
+              )
+            },
+            {
+              header: 'Email',
+              accessor: 'email',
+              cellStyle: { fontSize: 13, color: 'var(--text-secondary)' }
+            },
+            {
+              header: 'Téléphone',
+              render: (u) => <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{u.telephone || '—'}</span>
+            },
+            {
+              header: 'Rôle',
+              render: (u) => (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' }}>
+                  <span style={{ padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: `${roleColor[u.role]}20`, color: roleColor[u.role] }}>
+                    {u.role}
+                  </span>
+                  {u.role === 'agent' && (
+                    u.agent_evenements && u.agent_evenements.length > 0 ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                        <span style={{ padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: '#0D6EFD20', color: '#0D6EFD' }}>
+                          <i className="bi bi-link-45deg"></i> {u.agent_evenements.length}
+                        </span>
+                        <button onClick={() => setDetailsUser(u)} style={{ padding: '5px 10px', borderRadius: 8, fontSize: 12, fontWeight: 600, background: 'var(--primary)', color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <i className="bi bi-eye-fill" style={{ fontSize: 11 }} /> Détails
+                        </button>
+                      </div>
+                    ) : (
+                      <span style={{ marginTop: 4, padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: isDark ? '#333' : '#e9ecef', color: 'var(--text-muted)' }}>
+                        Non affecté
+                      </span>
+                    )
+                  )}
+                </div>
+              )
+            },
+            {
+              header: 'Statut',
+              render: (u) => (
+                <span style={{ padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: u.statut ? '#19875420' : '#DC354520', color: u.statut ? '#198754' : '#DC3545' }}>
+                  {u.statut ? 'Actif' : 'Inactif'}
+                </span>
+              )
+            },
+            {
+              header: 'Actions',
+              align: 'right',
+              render: (u) => (
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <ActionMenu 
+                    options={[
+                      { label: 'Affecter (Événement)', icon: 'bi-link', color: '#10b981', hidden: u.role !== 'agent', onClick: () => ouvrirAffecter(u) },
+                      { divider: true, hidden: u.role !== 'agent' },
+                      { label: 'Modifier', icon: 'bi-pencil-fill', color: '#3b82f6', onClick: () => ouvrirEditer(u) },
+                      { label: u.statut ? 'Désactiver' : 'Activer', icon: u.statut ? 'bi-slash-circle-fill' : 'bi-check-circle-fill', color: u.statut ? '#f59e0b' : '#10b981', onClick: () => toggle(u.id) },
+                      { label: 'Supprimer', icon: 'bi-trash-fill', color: '#ef4444', onClick: () => demanderSuppression(u.id) }
+                    ]}
+                  />
+                </div>
+              )
+            }
+          ]}
+          emptyMessage={(
+            <>
+              <i className="bi bi-people" style={{ fontSize: 36, display: 'block', marginBottom: 8 }} />
+              Aucun utilisateur trouvé
+            </>
           )}
-        </div>
+        />
       </div>
 
       {/* Modal Créer/Modifier compte (compact 2 colonnes) */}
@@ -271,42 +284,71 @@ export default function AdminUsers() {
               </button>
             </div>
             <form onSubmit={sauvegarder}>
-              {/* Formulaire Responsive */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px 16px' }}>
-                <div style={{ flex: '1 1 calc(50% - 8px)', minWidth: 200 }}>
+              {/* Formulaire Responsive (forcé à 2 colonnes) */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px 16px' }}>
+                <div>
                   <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>Nom *</label>
-                  <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required style={{ ...inputStyle, marginTop: 4, padding: '8px 12px', fontSize: 13 }} />
+                  <input type="text" value={form.name} onChange={(e) => {
+                    setForm({ ...form, name: e.target.value })
+                    if (errors.name) setErrors({ ...errors, name: null })
+                  }} required style={{ ...inputStyle, marginTop: 4, padding: '8px 12px', fontSize: 13, ...(errors.name ? { borderColor: '#ef4444' } : {}) }} />
+                  {renderError('name')}
                 </div>
-                <div style={{ flex: '1 1 calc(50% - 8px)', minWidth: 200 }}>
+                <div>
                   <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>Prénom</label>
-                  <input type="text" value={form.prenom} onChange={(e) => setForm({ ...form, prenom: e.target.value })} style={{ ...inputStyle, marginTop: 4, padding: '8px 12px', fontSize: 13 }} />
+                  <input type="text" value={form.prenom} onChange={(e) => {
+                    setForm({ ...form, prenom: e.target.value })
+                    if (errors.prenom) setErrors({ ...errors, prenom: null })
+                  }} style={{ ...inputStyle, marginTop: 4, padding: '8px 12px', fontSize: 13, ...(errors.prenom ? { borderColor: '#ef4444' } : {}) }} />
+                  {renderError('prenom')}
                 </div>
-                <div style={{ flex: '1 1 calc(50% - 8px)', minWidth: 200 }}>
+                <div>
                   <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>Email *</label>
-                  <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required style={{ ...inputStyle, marginTop: 4, padding: '8px 12px', fontSize: 13 }} />
+                  <input type="email" value={form.email} onChange={(e) => {
+                    setForm({ ...form, email: e.target.value })
+                    if (errors.email) setErrors({ ...errors, email: null })
+                  }} required style={{ ...inputStyle, marginTop: 4, padding: '8px 12px', fontSize: 13, ...(errors.email ? { borderColor: '#ef4444' } : {}) }} />
+                  {renderError('email')}
                 </div>
-                <div style={{ flex: '1 1 calc(50% - 8px)', minWidth: 200 }}>
+                <div>
                   <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>Téléphone</label>
-                  <input type="tel" value={form.telephone} onChange={(e) => setForm({ ...form, telephone: e.target.value })} style={{ ...inputStyle, marginTop: 4, padding: '8px 12px', fontSize: 13 }} />
+                  <input type="tel" value={form.telephone} onChange={(e) => {
+                    setForm({ ...form, telephone: e.target.value })
+                    if (errors.telephone) setErrors({ ...errors, telephone: null })
+                  }} style={{ ...inputStyle, marginTop: 4, padding: '8px 12px', fontSize: 13, ...(errors.telephone ? { borderColor: '#ef4444' } : {}) }} />
+                  {renderError('telephone')}
                 </div>
-                <div style={{ flex: '1 1 calc(50% - 8px)', minWidth: 200 }}>
+                <div>
                   <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>
                     Mot de passe {editingId ? '' : '*'}
                   </label>
-                  <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required={!editingId} placeholder={editingId ? '(Inchangé)' : ''} style={{ ...inputStyle, marginTop: 4, padding: '8px 12px', fontSize: 13 }} />
+                  <div style={{ position: 'relative' }}>
+                    <input type={showPassword ? 'text' : 'password'} value={form.password} onChange={(e) => {
+                      setForm({ ...form, password: e.target.value })
+                      if (errors.password) setErrors({ ...errors, password: null })
+                    }} required={!editingId} placeholder={editingId ? '(Inchangé)' : ''} style={{ ...inputStyle, marginTop: 4, padding: '8px 36px 8px 12px', fontSize: 13, width: '100%', ...(errors.password ? { borderColor: '#ef4444' } : {}) }} />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 16 }}>
+                      <i className={`bi ${showPassword ? 'bi-eye-slash-fill' : 'bi-eye-fill'}`} />
+                    </button>
+                  </div>
+                  {renderError('password')}
                 </div>
-                <div style={{ flex: '1 1 calc(50% - 8px)', minWidth: 200 }}>
+                <div>
                   <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>Sexe</label>
                   <CustomSelect 
                     value={form.sexe} 
-                    onChange={(val) => setForm({ ...form, sexe: val })} 
+                    onChange={(val) => {
+                      setForm({ ...form, sexe: val })
+                      if (errors.sexe) setErrors({ ...errors, sexe: null })
+                    }} 
                     placeholder="--"
                     options={[
                       { value: 'M', label: 'Homme (M)' },
                       { value: 'F', label: 'Femme (F)' }
                     ]}
-                    style={{ marginTop: 4, padding: '8px 12px' }}
+                    style={{ marginTop: 4, padding: '8px 12px', ...(errors.sexe ? { borderColor: '#ef4444' } : {}) }}
                   />
+                  {renderError('sexe')}
                 </div>
               </div>
               {/* Rôle en pleine largeur */}
@@ -314,7 +356,10 @@ export default function AdminUsers() {
                 <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>Rôle *</label>
                 <CustomSelect 
                   value={form.role} 
-                  onChange={(val) => setForm({ ...form, role: val })} 
+                  onChange={(val) => {
+                    setForm({ ...form, role: val })
+                    if (errors.role) setErrors({ ...errors, role: null })
+                  }} 
                   required
                   placeholder="Sélectionnez un rôle"
                   options={[
@@ -323,8 +368,9 @@ export default function AdminUsers() {
                     { value: 'organisateur', label: 'Organisateur', icon: 'bi-briefcase-fill', color: '#8b5cf6' },
                     { value: 'admin', label: 'Administrateur', icon: 'bi-shield-fill-check', color: '#ef4444' }
                   ]}
-                  style={{ marginTop: 4, padding: '8px 12px' }}
+                  style={{ marginTop: 4, padding: '8px 12px', ...(errors.role ? { borderColor: '#ef4444' } : {}) }}
                 />
+                {renderError('role')}
               </div>
               {/* Boutons */}
               <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
@@ -386,27 +432,15 @@ export default function AdminUsers() {
       )}
 
       {/* Modal Supprimer */}
-      {deleteId && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, animation: 'fadeIn 0.2s ease' }}>
-          <div style={{ backgroundColor: isDark ? '#1e2130' : '#fff', borderRadius: 24, padding: 32, width: '100%', maxWidth: 400, textAlign: 'center', border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`, boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
-            <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#dc354515', color: '#dc3545', fontSize: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-              <i className="bi bi-exclamation-triangle" />
-            </div>
-            <h3 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 12px' }}>Confirmer la suppression</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.5, margin: '0 0 24px' }}>
-              Êtes-vous sûr de vouloir supprimer ce compte ? Cette action est irréversible.
-            </p>
-            <div style={{ display: 'flex', gap: 12 }}>
-              <button onClick={() => setDeleteId(null)} style={{ flex: 1, padding: '12px', borderRadius: 12, border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`, background: isDark ? '#161b2d' : '#f8fafd', color: 'var(--text-primary)', fontWeight: 600, cursor: 'pointer' }}>
-                Annuler
-              </button>
-              <button onClick={confirmerSuppression} disabled={saving} style={{ flex: 1, padding: '12px', borderRadius: 12, border: 'none', background: '#dc3545', color: '#fff', fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer' }}>
-                {saving ? 'Suppression…' : 'Oui, supprimer'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        isOpen={!!deleteId}
+        title="Supprimer l'utilisateur"
+        message="Êtes-vous sûr de vouloir supprimer ce compte ? Cette action est irréversible."
+        onConfirm={confirmerSuppression}
+        onCancel={() => setDeleteId(null)}
+        loading={saving}
+        isDanger={true}
+      />
 
       {/* Modal Détails Affectations */}
       {detailsUser && (

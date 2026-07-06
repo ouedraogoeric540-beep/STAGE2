@@ -36,13 +36,13 @@ export default function EvenementsAssignes() {
             <p style={{ color: 'var(--text-muted)' }}>Vous n'avez aucun événement assigné pour le moment.</p>
           </div>
         ) : (
-          <div className="agent-events-grid">
+          <div className="event-grid">
             {evenements.map((ev) => (
-              <div key={ev.id} className="card agent-event-card" style={{ 
+              <div key={ev.id} className="card" style={{ 
                 border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`,
-                overflow: 'hidden'
+                overflow: 'hidden', borderRadius: 16
               }}>
-                <div className="agent-card-header" style={{ 
+                <div style={{ 
                   height: 100, 
                   background: 'var(--gradient-brand)',
                   padding: 20,
@@ -58,14 +58,14 @@ export default function EvenementsAssignes() {
                   </h3>
                 </div>
 
-                <div className="card-body agent-card-body" style={{ padding: 20 }}>
-                  <div className="agent-card-location" style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 16 }}>
+                <div className="card-body" style={{ padding: 20 }}>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 16 }}>
                     <i className="bi bi-geo-alt me-2" /> {ev.lieu}
                   </div>
 
                   {/* Jauge de remplissage */}
                   <div style={{ marginBottom: 20 }}>
-                    <div className="agent-card-progress-text" style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
                       <span>Remplissage</span>
                       <span style={{ color: ((ev.scans_valides_count || 0) / (ev.capacite_max_calculee || 1)) > 0.9 ? '#ef4444' : 'var(--brand-color)' }}>
                         {ev.scans_valides_count || 0} / {ev.capacite_max_calculee || '?'}
@@ -81,27 +81,27 @@ export default function EvenementsAssignes() {
                     </div>
                   </div>
 
-                  <h6 className="agent-card-stats-title" style={{ fontSize: 13, textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: 1, marginBottom: 12 }}>
+                  <h6 style={{ fontSize: 13, textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: 1, marginBottom: 12 }}>
                     Statistiques
                   </h6>
                   
-                  <div className="agent-card-stats">
-                    <div className="agent-stat-box" style={{ background: isDark ? '#252839' : '#f8fafd', border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}` }}>
-                      <div className="agent-stat-val" style={{ color: 'var(--brand-color)' }}>{ev.scans_count || 0}</div>
-                      <div className="agent-stat-lbl" style={{ color: 'var(--text-secondary)' }}>TOTAL</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 20 }}>
+                    <div style={{ padding: '10px 4px', borderRadius: 12, textAlign: 'center', background: isDark ? '#252839' : '#f8fafd', border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`, overflow: 'hidden' }}>
+                      <div style={{ color: 'var(--brand-color)', fontSize: 18, fontWeight: 800 }}>{ev.scans_count || 0}</div>
+                      <div style={{ color: 'var(--text-secondary)', fontSize: 10, fontWeight: 700, marginTop: 4, whiteSpace: 'nowrap' }}>TOTAL</div>
                     </div>
-                    <div className="agent-stat-box" style={{ background: 'rgba(25,135,84,0.1)', border: '1px solid rgba(25,135,84,0.2)' }}>
-                      <div className="agent-stat-val" style={{ color: '#198754' }}>{ev.scans_valides_count || 0}</div>
-                      <div className="agent-stat-lbl" style={{ color: '#198754' }}>VALIDES</div>
+                    <div style={{ padding: '10px 4px', borderRadius: 12, textAlign: 'center', background: 'rgba(25,135,84,0.1)', border: '1px solid rgba(25,135,84,0.2)', overflow: 'hidden' }}>
+                      <div style={{ color: '#198754', fontSize: 18, fontWeight: 800 }}>{ev.scans_valides_count || 0}</div>
+                      <div style={{ color: '#198754', fontSize: 10, fontWeight: 700, marginTop: 4, whiteSpace: 'nowrap' }}>VALIDES</div>
                     </div>
-                    <div className="agent-stat-box" style={{ background: 'rgba(220,53,69,0.1)', border: '1px solid rgba(220,53,69,0.2)' }}>
-                      <div className="agent-stat-val" style={{ color: '#dc3545' }}>{ev.scans_invalides_count || 0}</div>
-                      <div className="agent-stat-lbl" style={{ color: '#dc3545' }}>REFUSÉS</div>
+                    <div style={{ padding: '10px 4px', borderRadius: 12, textAlign: 'center', background: 'rgba(220,53,69,0.1)', border: '1px solid rgba(220,53,69,0.2)', overflow: 'hidden' }}>
+                      <div style={{ color: '#dc3545', fontSize: 18, fontWeight: 800 }}>{ev.scans_invalides_count || 0}</div>
+                      <div style={{ color: '#dc3545', fontSize: 10, fontWeight: 700, marginTop: 4, whiteSpace: 'nowrap' }}>REFUSÉS</div>
                     </div>
                   </div>
 
-                  <div className="agent-card-actions" style={{ display: 'flex', gap: 10 }}>
-                    <button onClick={() => navigate('/agent/scanner', { state: { evenementId: ev.id } })} className="btn btn-brand" style={{ flex: 1, padding: '8px 12px', fontSize: 13 }}>
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <button onClick={() => navigate('/agent/scanner', { state: { evenementId: ev.id } })} className="btn btn-brand" style={{ flex: 1, padding: '10px 12px', fontSize: 14, fontWeight: 600, borderRadius: 10 }}>
                       <i className="bi bi-qr-code-scan me-2" /> Scanner
                     </button>
                   </div>

@@ -19,8 +19,9 @@ const CATEGORIES_PREDEFINIES = [
   { nom: 'gratuit',          prix: '0', quantite_total: '' },   
 ]
 
-export default function FormulaireEvenement({ form, setForm, onSubmit, saving, editing, onClose, isDark }) {
+export default function FormulaireEvenement({ form, setForm, onSubmit, saving, editing, onClose, isDark, errors = {}, setErrors = () => {} }) {
   const [etape, setEtape] = useState(1);
+  const renderError = (field) => errors[field] ? <div style={{ color: '#ef4444', fontSize: 11, marginTop: 4 }}>{errors[field][0]}</div> : null;
 
   const nextStep = () => {
     if (etape === 1 && (!form.titre || !form.type)) return;
@@ -103,8 +104,12 @@ export default function FormulaireEvenement({ form, setForm, onSubmit, saving, e
       {/* Titre */}
       <div style={{ marginBottom: 14 }}>
         <label style={labelStyle}>Titre *</label>
-        <input value={form.titre} onChange={(e) => setForm({ ...form, titre: e.target.value })}
-          required style={inputStyle} placeholder="Nom de l'événement" />
+        <input value={form.titre} onChange={(e) => {
+          setForm({ ...form, titre: e.target.value })
+          if (errors.titre) setErrors({ ...errors, titre: null })
+        }}
+          required style={{ ...inputStyle, ...(errors.titre ? { borderColor: '#ef4444' } : {}) }} placeholder="Nom de l'événement" />
+        {renderError('titre')}
       </div>
 
       {/* Type d'événement */}
@@ -115,7 +120,10 @@ export default function FormulaireEvenement({ form, setForm, onSubmit, saving, e
             <button
               key={type.value}
               type="button"
-              onClick={() => setForm({ ...form, type: type.value })}
+              onClick={() => {
+                setForm({ ...form, type: type.value })
+                if (errors.type) setErrors({ ...errors, type: null })
+              }}
               style={{
                 flex: '1 1 calc(50% - 8px)',
                 padding: '8px 6px', borderRadius: 8, cursor: 'pointer',
@@ -130,13 +138,18 @@ export default function FormulaireEvenement({ form, setForm, onSubmit, saving, e
             </button>
           ))}
         </div>
+        {renderError('type')}
       </div>
 
       {/* Description */}
       <div style={{ marginBottom: 14 }}>
         <label style={labelStyle}>Description</label>
-        <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
-          rows={3} style={{ ...inputStyle, resize: 'vertical' }} placeholder="Description de l'événement" />
+        <textarea value={form.description} onChange={(e) => {
+          setForm({ ...form, description: e.target.value })
+          if (errors.description) setErrors({ ...errors, description: null })
+        }}
+          rows={3} style={{ ...inputStyle, resize: 'vertical', ...(errors.description ? { borderColor: '#ef4444' } : {}) }} placeholder="Description de l'événement" />
+        {renderError('description')}
       </div>
       </div>
       )}
@@ -148,7 +161,11 @@ export default function FormulaireEvenement({ form, setForm, onSubmit, saving, e
         <div style={{ flex: '1 1 calc(50% - 12px)', minWidth: 200 }}>
           <label style={labelStyle}>Date {form.is_multijour ? '(Première date)' : ''} *</label>
           <input type="datetime-local" value={form.date}
-            onChange={(e) => setForm({ ...form, date: e.target.value })} required style={inputStyle} />
+            onChange={(e) => {
+              setForm({ ...form, date: e.target.value })
+              if (errors.date) setErrors({ ...errors, date: null })
+            }} required style={{ ...inputStyle, ...(errors.date ? { borderColor: '#ef4444' } : {}) }} />
+          {renderError('date')}
         </div>
         
         {/* Switch Multi-jours */}
@@ -213,8 +230,12 @@ export default function FormulaireEvenement({ form, setForm, onSubmit, saving, e
 
         <div style={{ flex: '1 1 calc(50% - 12px)', minWidth: 200 }}>
           <label style={labelStyle}>Lieu *</label>
-          <input value={form.lieu} onChange={(e) => setForm({ ...form, lieu: e.target.value })}
-            required style={inputStyle} placeholder="Ville, Salle..." />
+          <input value={form.lieu} onChange={(e) => {
+            setForm({ ...form, lieu: e.target.value })
+            if (errors.lieu) setErrors({ ...errors, lieu: null })
+          }}
+            required style={{ ...inputStyle, ...(errors.lieu ? { borderColor: '#ef4444' } : {}) }} placeholder="Ville, Salle..." />
+          {renderError('lieu')}
         </div>
       </div>
 
