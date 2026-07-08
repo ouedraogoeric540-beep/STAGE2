@@ -26,7 +26,7 @@ export default function LandingPage() {
       await api.post('/contact', contactForm)
       toast.success('Votre message a bien été envoyé !')
       setContactForm({ name: '', email: '', message: '' })
-    } catch (err) {
+    } catch {
       toast.error('Une erreur est survenue lors de l\'envoi.')
     } finally {
       setContactSending(false)

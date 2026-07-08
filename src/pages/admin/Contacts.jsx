@@ -75,69 +75,72 @@ export default function AdminContacts() {
           </div>
         </div>
 
-        <div style={{ backgroundColor: isDark ? '#1e2130' : '#fff', borderRadius: 16, border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`, overflow: 'hidden' }}>
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: 60 }}>
-              <div style={{ width: 36, height: 36, border: '3px solid var(--border)', borderTopColor: '#0D6EFD', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto' }} />
+        {/* Liste Contacts Soft UI */}
+        {loading ? (
+          <div className="text-center p-5"><div className="sp-spinner mx-auto" /></div>
+        ) : contacts.length === 0 ? (
+          <div className="text-center p-5 text-muted">
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: isDark ? '#252839' : '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+              <i className="bi bi-envelope-open" style={{ fontSize: 28, color: 'var(--text-secondary)' }} />
             </div>
-          ) : contacts.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>
-              <i className="bi bi-envelope-open" style={{ fontSize: 48, display: 'block', marginBottom: 12 }} />
-              Aucun message de contact.
-            </div>
-          ) : (
-            <div className="table-responsive">
-              <table className="table mb-0" style={{ color: 'var(--text-primary)' }}>
-                <thead>
-                  <tr style={{ backgroundColor: isDark ? '#252839' : '#f8f9fa', borderBottom: `2px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}` }}>
-                    <th style={{ padding: '16px 24px', fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5, border: 'none' }}>Expéditeur</th>
-                    <th style={{ padding: '16px 24px', fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5, border: 'none' }}>Message</th>
-                    <th style={{ padding: '16px 24px', fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5, border: 'none' }}>Date</th>
-                    <th style={{ padding: '16px 24px', fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5, border: 'none', textAlign: 'right' }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {contacts.map((contact) => (
-                    <tr key={contact.id} style={{ borderBottom: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`, backgroundColor: !contact.read ? (isDark ? '#1a1f35' : '#f0f7ff') : 'transparent', transition: 'background-color 0.2s' }}>
-                      <td style={{ padding: '16px 24px', verticalAlign: 'middle', border: 'none' }}>
-                        <div style={{ fontWeight: !contact.read ? 700 : 500, color: 'var(--text-primary)', fontSize: 14 }}>{contact.name}</div>
-                        <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{contact.email}</div>
-                      </td>
-                      <td style={{ padding: '16px 24px', verticalAlign: 'middle', border: 'none' }}>
-                        <div style={{
-                          maxWidth: '300px',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          fontSize: 14,
-                          fontWeight: !contact.read ? 600 : 400,
-                          color: 'var(--text-primary)',
-                          cursor: 'pointer'
-                        }} onClick={() => openMessage(contact)}>
-                          {contact.message}
-                        </div>
-                      </td>
-                      <td style={{ padding: '16px 24px', verticalAlign: 'middle', border: 'none', fontSize: 13, color: 'var(--text-secondary)' }}>
-                        {new Date(contact.created_at).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                      </td>
-                      <td style={{ padding: '16px 24px', verticalAlign: 'middle', border: 'none', textAlign: 'right' }}>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                          <ActionMenu
-                            options={[
-                              { label: 'Lire le message', icon: 'bi-envelope-open', color: '#0D6EFD', onClick: () => openMessage(contact) },
-                              { divider: true },
-                              { label: 'Supprimer', icon: 'bi-trash', color: '#ef4444', onClick: () => setDeleteId(contact.id) }
-                            ]}
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+            <h4 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>Aucun message</h4>
+            <p style={{ fontSize: 13 }}>Vous n'avez aucun message de contact.</p>
+          </div>
+        ) : (
+          <div className="d-flex flex-column gap-2 mt-4">
+            {contacts.map((contact) => (
+              <div 
+                key={contact.id} 
+                className="soft-card-row"
+                style={{
+                  cursor: 'pointer',
+                  borderLeft: !contact.read ? '4px solid var(--primary)' : '4px solid transparent',
+                  background: !contact.read ? (isDark ? 'rgba(13,110,253,0.05)' : 'rgba(13,110,253,0.03)') : undefined
+                }}
+                onClick={() => openMessage(contact)}
+              >
+                <div className="d-flex flex-column gap-2 flex-grow-1">
+                  <div className="d-flex align-items-center gap-2">
+                    <div style={{ width: 36, height: 36, borderRadius: '50%', background: !contact.read ? 'var(--primary)' : (isDark ? '#2a2d3e' : '#e2e8f0'), display: 'flex', alignItems: 'center', justifyContent: 'center', color: !contact.read ? '#fff' : 'var(--text-secondary)', fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
+                      {contact.name?.charAt(0).toUpperCase()}
+                    </div>
+                    <h5 style={{ margin: 0, fontWeight: !contact.read ? 800 : 600, fontSize: 15 }}>{contact.name}</h5>
+                    {!contact.read && (
+                      <span style={{ padding: '2px 8px', borderRadius: 20, fontSize: 9, fontWeight: 800, background: 'var(--primary)', color: '#fff', textTransform: 'uppercase' }}>
+                        Nouveau
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className="text-muted d-flex gap-3 flex-wrap" style={{ fontSize: 13, paddingLeft: 44 }}>
+                    <span><i className="bi bi-envelope"/> {contact.email}</span>
+                    <span><i className="bi bi-clock"/> {new Date(contact.created_at).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                  </div>
+
+                  <div style={{ 
+                    paddingLeft: 44, 
+                    fontSize: 14, 
+                    fontWeight: !contact.read ? 600 : 400,
+                    color: 'var(--text-primary)',
+                    display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden'
+                  }}>
+                    {contact.message}
+                  </div>
+                </div>
+
+                <div className="d-flex align-items-center mt-3 mt-md-0 gap-2" onClick={(e) => e.stopPropagation()}>
+                  <ActionMenu
+                    options={[
+                      { label: 'Lire le message', icon: 'bi-envelope-open', color: '#0D6EFD', onClick: () => openMessage(contact) },
+                      { divider: true },
+                      { label: 'Supprimer', icon: 'bi-trash', color: '#ef4444', onClick: () => setDeleteId(contact.id) }
+                    ]}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Modal View Message */}

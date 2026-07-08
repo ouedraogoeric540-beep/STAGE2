@@ -5,7 +5,9 @@ import api from '../../api/axios'
 import ActionMenu from '../../components/common/ActionMenu'
 import ConfirmModal from '../../components/common/ConfirmModal'
 import CustomSelect from '../../components/common/CustomSelect'
-import DataTable from '../../components/common/DataTable'
+import DashboardCard from '../../components/common/dashboard/DashboardCard'
+import DashboardTable from '../../components/common/dashboard/DashboardTable'
+
 import toast from 'react-hot-toast'
 
 export default function OrgAgents() {
@@ -135,7 +137,7 @@ export default function OrgAgents() {
       }))
 
       charger()
-    } catch (err) {
+    } catch {
       toast.error('Erreur lors de la désaffectation')
     } finally { setSaving(false) }
   }
@@ -193,153 +195,74 @@ export default function OrgAgents() {
           </div>
         </div>
 
-        {/* Tableau */}
-        <div style={{ backgroundColor: isDark ? '#1e2130' : '#fff', borderRadius: 16, border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`, overflow: 'hidden' }}>
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: 60 }}>
-              <div style={{ width: 36, height: 36, border: '3px solid var(--border)', borderTopColor: '#0D6EFD', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto' }} />
-            </div>
-          ) : agents.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>
-              <i className="bi bi-person-badge" style={{ fontSize: 48, display: 'block', marginBottom: 12 }} />
-              Aucun agent créé pour le moment
-            </div>
-          ) : (
-            <div className="table-responsive">
-              {/* VUE CARTES (MOBILE) */}
-              <div className="d-block d-md-none p-3">
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
-                  {agents.map((agent) => (
-                    <div key={agent.id} style={{ 
-                      border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`, 
-                      borderRadius: 12, padding: 16,
-                      backgroundColor: isDark ? '#252839' : '#f8fafd'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                      <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#19875430', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#198754', fontWeight: 700, fontSize: 16 }}>
-                        {agent.name?.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: 15 }}>{agent.name}</div>
-                        <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{agent.email}</div>
-                      </div>
+        {/* Liste des agents (DashboardTable) */}
+        <DashboardCard noPadding={true}>
+          <DashboardTable 
+            headers={['Agent', 'Contact', 'Statut', 'Affectations', 'Actions']}
+            isEmpty={!loading && agents.length === 0}
+            emptyText="Aucun agent créé pour le moment"
+            emptyIcon="bi-person-badge"
+          >
+            {loading ? (
+              <tr>
+                <td colSpan="5" style={{ textAlign: 'center', padding: '40px 0' }}>
+                  <div className="sp-spinner mx-auto" />
+                </td>
+              </tr>
+            ) : agents.map((agent) => (
+              <tr key={agent.id} 
+                  style={{ borderTop: '1px solid var(--border)', transition: 'background 0.15s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-surface)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              >
+                <td style={{ padding: '14px 16px' }}>
+                  <div className="d-flex align-items-center gap-2">
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--brand-glow)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', fontWeight: 800, fontSize: 13, flexShrink: 0 }}>
+                      {agent.name?.charAt(0).toUpperCase()}
                     </div>
-                    
-                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 12 }}>
-                      <i className="bi bi-telephone me-2"></i> {agent.telephone || '—'}
-                    </div>
-
-                    <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-                      <span style={{ padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: agent.statut ? '#19875420' : '#DC354520', color: agent.statut ? '#198754' : '#DC3545' }}>
-                        {agent.statut ? 'Actif' : 'Inactif'}
-                      </span>
-                      {agent.affectations_count > 0 ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span style={{ padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: '#0D6EFD20', color: '#0D6EFD' }}>
-                            <i className="bi bi-link-45deg"></i> {agent.affectations_count} affect.
-                          </span>
-                          <button onClick={() => setDetailsAgent(agent)} style={{ padding: '4px 10px', borderRadius: 8, fontSize: 12, fontWeight: 600, background: 'var(--primary)', color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <i className="bi bi-eye-fill" style={{ fontSize: 11 }} /> Détails
-                          </button>
-                        </div>
-                      ) : (
-                        <span style={{ padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: isDark ? '#333' : '#e9ecef', color: 'var(--text-muted)' }}>
-                          Non affecté
-                        </span>
-                      )}
-                    </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16, borderTop: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`, paddingTop: 12 }}>
-                      <ActionMenu 
-                        options={[
-                          { label: 'Affecter à un événement', icon: 'bi-link', color: '#10b981', onClick: () => ouvrirAffecter(agent) },
-                          { divider: true },
-                          { label: 'Modifier', icon: 'bi-pencil-fill', color: '#3b82f6', onClick: () => ouvrirEditer(agent) },
-                          { label: agent.statut ? 'Désactiver' : 'Activer', icon: agent.statut ? 'bi-slash-circle-fill' : 'bi-check-circle-fill', color: agent.statut ? '#f59e0b' : '#10b981', onClick: () => toggle(agent.id) },
-                          { label: 'Supprimer', icon: 'bi-trash-fill', color: '#ef4444', onClick: () => demanderSuppression(agent.id) }
-                        ]}
-                      />
-                    </div>
+                    <span style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: 14 }}>{agent.name}</span>
                   </div>
-                ))}
-                </div>
-              </div>
-
-              {/* VUE TABLEAU (DESKTOP) */}
-              <div className="d-none d-md-block">
-                <DataTable
-                  loading={loading}
-                  data={agents}
-                  columns={[
-                    {
-                      header: 'Agent',
-                      render: (agent) => (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#19875430', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#198754', fontWeight: 700, fontSize: 14 }}>
-                            {agent.name?.charAt(0).toUpperCase()}
-                          </div>
-                          <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 14 }}>{agent.name}</span>
-                        </div>
-                      )
-                    },
-                    {
-                      header: 'Email',
-                      accessor: 'email',
-                      cellStyle: { fontSize: 13, color: 'var(--text-secondary)' }
-                    },
-                    {
-                      header: 'Téléphone',
-                      render: (agent) => <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{agent.telephone || '—'}</span>
-                    },
-                    {
-                      header: 'Affectation',
-                      render: (agent) => agent.affectations_count > 0 ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span style={{ padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: '#0D6EFD20', color: '#0D6EFD' }}>
-                            <i className="bi bi-link-45deg"></i> {agent.affectations_count}
-                          </span>
-                          <button onClick={() => setDetailsAgent(agent)} style={{ padding: '5px 10px', borderRadius: 8, fontSize: 12, fontWeight: 600, background: 'var(--primary)', color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <i className="bi bi-eye-fill" style={{ fontSize: 11 }} /> Détails
-                          </button>
-                        </div>
-                      ) : (
-                        <span style={{ padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: isDark ? '#333' : '#e9ecef', color: 'var(--text-muted)' }}>
-                          Non affecté
-                        </span>
-                      )
-                    },
-                    {
-                      header: 'Statut',
-                      render: (agent) => (
-                        <span style={{ padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: agent.statut ? '#19875420' : '#DC354520', color: agent.statut ? '#198754' : '#DC3545' }}>
-                          {agent.statut ? 'Actif' : 'Inactif'}
-                        </span>
-                      )
-                    },
-                    {
-                      header: 'Actions',
-                      align: 'right',
-                      render: (agent) => (
-                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                          <ActionMenu 
-                            options={[
-                              { label: 'Affecter à un événement', icon: 'bi-link', color: '#10b981', onClick: () => ouvrirAffecter(agent) },
-                              { divider: true },
-                              { label: 'Modifier', icon: 'bi-pencil-fill', color: '#3b82f6', onClick: () => ouvrirEditer(agent) },
-                              { label: agent.statut ? 'Désactiver' : 'Activer', icon: agent.statut ? 'bi-slash-circle-fill' : 'bi-check-circle-fill', color: agent.statut ? '#f59e0b' : '#10b981', onClick: () => toggle(agent.id) },
-                              { label: 'Supprimer', icon: 'bi-trash-fill', color: '#ef4444', onClick: () => demanderSuppression(agent.id) }
-                            ]}
-                          />
-                        </div>
-                      )
-                    }
-                  ]}
-                  emptyMessage="Aucun agent créé pour le moment"
-                />
-              </div>
-            </div>
-          )}
-        </div>
+                </td>
+                <td style={{ padding: '14px 16px', color: 'var(--text-secondary)' }}>
+                  {agent.email && <div><i className="bi bi-envelope"/> {agent.email}</div>}
+                  {agent.telephone && <div><i className="bi bi-telephone"/> {agent.telephone}</div>}
+                  {!agent.email && !agent.telephone && '—'}
+                </td>
+                <td style={{ padding: '14px 16px' }}>
+                  <span className={`badge-soft ${agent.statut ? 'badge-soft-success' : 'badge-soft-warning'}`} style={{ fontSize: 10 }}>
+                    {agent.statut ? 'ACTIF' : 'INACTIF'}
+                  </span>
+                </td>
+                <td style={{ padding: '14px 16px', color: 'var(--text-secondary)' }}>
+                  {agent.affectations_count > 0 ? (
+                    <span style={{ color: '#0D6EFD', cursor: 'pointer', fontWeight: 600 }} onClick={() => setDetailsAgent(agent)}>
+                      <i className="bi bi-link-45deg"/> {agent.affectations_count} affectation(s)
+                    </span>
+                  ) : (
+                    <span style={{ color: 'var(--text-muted)' }}><i className="bi bi-exclamation-circle" /> Non affecté</span>
+                  )}
+                </td>
+                <td style={{ padding: '14px 16px' }}>
+                  <div className="d-flex align-items-center gap-2">
+                    <button onClick={() => ouvrirAffecter(agent)} className="btn-soft py-1 px-2" style={{ fontSize: 12, background: 'rgba(13,110,253,0.1)', color: '#0D6EFD', border: 'none', borderRadius: 6, fontWeight: 600 }}>
+                      Affecter
+                    </button>
+                    <button onClick={() => ouvrirEditer(agent)} className="btn-soft py-1 px-2" style={{ fontSize: 12, background: 'transparent', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text-primary)' }}>
+                      <i className="bi bi-pencil" />
+                    </button>
+                    <ActionMenu 
+                      options={[
+                        { label: agent.statut ? 'Désactiver' : 'Activer', icon: agent.statut ? 'bi-slash-circle-fill' : 'bi-check-circle-fill', color: agent.statut ? '#f59e0b' : '#10b981', onClick: () => toggle(agent.id) },
+                        { divider: true },
+                        { label: 'Supprimer', icon: 'bi-trash-fill', color: '#ef4444', onClick: () => demanderSuppression(agent.id) }
+                      ]}
+                    />
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </DashboardTable>
+        </DashboardCard>
       </div>
 
       {/* Modal Créer agent */}

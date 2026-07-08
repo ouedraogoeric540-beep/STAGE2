@@ -215,7 +215,6 @@ export default function EventDetail() {
                       onClick={() => dispo > 0 && setSelected(cat)}
                       style={{
                         padding: '16px 14px', cursor: dispo > 0 ? 'pointer' : 'not-allowed',
-                        borderBottom: `1px solid var(--border)`,
                         background: isSelected ? 'rgba(13, 110, 253, 0.05)' : 'transparent',
                         borderRadius: isSelected ? 8 : 0,
                         border: isSelected ? '1px solid var(--brand-color)' : '1px solid transparent',

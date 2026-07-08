@@ -3,12 +3,11 @@ import Layout from '../../components/common/Layout'
 import api from '../../api/axios'
 import toast from 'react-hot-toast'
 import { useTheme } from '../../context/ThemeContext'
-import ActionMenu from '../../components/common/ActionMenu'
 
 export default function OrgScans() {
   const { isDark } = useTheme()
   const [scans, setScans] = useState([])
-  const [stats, setStats] = useState({ total_scannes: 0, capacite_totale: 0 })
+  const [, setStats] = useState({ total_scannes: 0, capacite_totale: 0 })
   const [statsEvents, setStatsEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedScan, setSelectedScan] = useState(null)
@@ -35,9 +34,7 @@ export default function OrgScans() {
       .finally(() => setLoading(false))
   }, [])
 
-  const pourcentage = stats.capacite_totale > 0 
-    ? Math.round((stats.total_scannes / stats.capacite_totale) * 100) 
-    : 0
+
 
   return (
     <Layout title="Suivi des Scans">
@@ -97,45 +94,32 @@ export default function OrgScans() {
         )}
 
         {/* ── Liste des logs de scan ── */}
-        <div className="card">
-          <div className="card-header">Historique des entrées</div>
+        <div className="d-flex flex-column gap-2 mt-4">
+          <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 12, color: 'var(--text-primary)' }}>Historique des entrées</h3>
           {loading ? (
-            <div style={{ textAlign: 'center', padding: 40 }}>
-              <div className="sp-spinner" style={{ margin: '0 auto' }} />
-            </div>
+            <div className="text-center p-5"><div className="sp-spinner mx-auto" /></div>
           ) : scans.length > 0 ? (
-            <div className="table-responsive">
-              <table className="table" style={{ minWidth: 800 }}>
-                <thead>
-                  <tr style={{ borderBottom: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}` }}>
-                    {['Date & Heure', 'Événement', 'Participant', 'Résultat', 'Actions'].map((h) => (
-                      <th key={h} style={{ padding: '14px 16px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {scans.map((scan) => (
-                    <tr key={scan.id} style={{ borderBottom: `1px solid ${isDark ? '#2a2d3e' : '#f0f0f0'}` }}>
-                      <td style={{ padding: '14px 16px', fontSize: 13, color: 'var(--text-secondary)' }}>{new Date(scan.date_scan).toLocaleString('fr-FR')}</td>
-                      <td style={{ padding: '14px 16px', fontWeight: 600, color: 'var(--text-primary)', fontSize: 14 }}>{scan.evenement?.titre || 'Inconnu'}</td>
-                      <td style={{ padding: '14px 16px', fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 }}>{scan.ticket?.participant?.nom || 'Inconnu'}</td>
-                      <td style={{ padding: '14px 16px' }}>{getStatusBadge(scan.resultat)}</td>
-                      <td style={{ padding: '14px 16px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                          <ActionMenu 
-                            options={[
-                              { label: 'Détails du scan', icon: 'bi-eye-fill', color: 'var(--primary)', onClick: () => setSelectedScan(scan) }
-                            ]}
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            scans.map((scan) => (
+              <div key={scan.id} className="soft-card-row" style={{ cursor: 'pointer' }} onClick={() => setSelectedScan(scan)}>
+                <div className="d-flex flex-column gap-2 flex-grow-1">
+                  <div className="d-flex align-items-center gap-2">
+                    <h5 style={{ margin: 0, fontWeight: 800, fontSize: 16 }}>{scan.ticket?.participant?.nom || 'Inconnu'}</h5>
+                    {getStatusBadge(scan.resultat)}
+                  </div>
+                  <div className="text-muted d-flex gap-3 flex-wrap" style={{ fontSize: 13, fontWeight: 500 }}>
+                    <span><i className="bi bi-clock"/> {new Date(scan.date_scan).toLocaleString('fr-FR')}</span>
+                    <span><i className="bi bi-calendar-event"/> {scan.evenement?.titre || 'Inconnu'}</span>
+                  </div>
+                </div>
+                <div className="d-flex align-items-center gap-2 mt-3 mt-md-0" onClick={e => e.stopPropagation()}>
+                  <button onClick={() => setSelectedScan(scan)} className="btn-soft btn-soft-primary">
+                    Détails
+                  </button>
+                </div>
+              </div>
+            ))
           ) : (
-            <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
+            <div className="text-center p-5 text-muted">
               Aucun ticket scanné pour le moment.
             </div>
           )}

@@ -3,7 +3,10 @@ import { Link, useNavigate } from 'react-router-dom'
 import api from '../../api/axios'
 import { useTheme } from '../../context/ThemeContext'
 import { useAuth } from '../../context/AuthContext'
-import CustomSelect from '../../components/common/CustomSelect'
+import Select from '../../components/ui/Select'
+import Input from '../../components/ui/Input'
+import Button from '../../components/ui/Button'
+import Checkbox from '../../components/ui/Checkbox'
 import Logo from '../../components/common/Logo'
 import ThemeToggle from '../../components/common/ThemeToggle'
 import toast from 'react-hot-toast'
@@ -17,7 +20,7 @@ export default function Register() {
 
   const [form, setForm] = useState({
     name: '', prenom: '', sexe: '', email: '', telephone: '',
-    password: '', password_confirmation: '',
+    password: '', password_confirmation: '', accepte_cgu: false,
   })
   const [showPwd, setShowPwd] = useState(false)
   const [showConf, setShowConf] = useState(false)
@@ -26,11 +29,12 @@ export default function Register() {
   const [errors, setErrors] = useState({})
 
   const handle = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
+    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+    setForm({ ...form, [e.target.name]: value })
     if (errors[e.target.name]) setErrors({ ...errors, [e.target.name]: null })
   }
   
-  const renderError = (field) => errors[field] ? <div style={{ color: '#ef4444', fontSize: 11, marginTop: 4 }}>{errors[field][0]}</div> : null;
+  const getError = (field) => errors[field] ? errors[field][0] : null;
 
   const submit = async (e) => {
     e.preventDefault()
@@ -52,14 +56,14 @@ export default function Register() {
           setErrors(apiErrors)
           toast.error('Veuillez corriger les erreurs signalées.')
         }
-        else toast.error(err.response?.data?.message || 'Erreur lors de l\'inscription.')
+        else toast.error(err.response?.data?.message || "Erreur lors de l'inscription.")
       } finally {
         setLoading(false)
       }
     } else {
       setLoading(true)
       try {
-        const res = await api.post('/register-organisateur', { name: form.name, email: form.email })
+        const res = await api.post('/register-organisateur', { name: form.name, email: form.email, accepte_cgu: form.accepte_cgu })
         toast.success(res.data.message || 'Compte organisateur créé !')
         setOrganisateurSuccess({
           identifiant: res.data.identifiant,
@@ -71,268 +75,292 @@ export default function Register() {
           setErrors(apiErrors)
           toast.error('Veuillez corriger les erreurs signalées.')
         }
-        else toast.error(err.response?.data?.message || 'Erreur lors de l\'inscription.')
+        else toast.error(err.response?.data?.message || "Erreur lors de l'inscription.")
       } finally {
         setLoading(false)
       }
     }
   }
 
-  const inputStyle = {
-    backgroundColor: isDark ? '#252839' : '#f7fafc',
-    border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`,
-    color: isDark ? '#e8eaf0' : '#1a202c',
-    borderRadius: 8, padding: '8px 12px',
-    width: '100%', fontSize: 14, outline: 'none',
-  }
-
   return (
     <div style={{
       minHeight: '100vh',
-      background: isDark
-        ? 'linear-gradient(135deg, #0f1117 0%, #1a1d27 100%)'
-        : 'linear-gradient(135deg, #f0f2f5 0%, #e8eef7 100%)',
-      display: 'flex', alignItems: 'center',
-      justifyContent: 'center', padding: '24px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '24px',
+      position: 'relative',
+      overflow: 'hidden',
+      background: isDark 
+        ? 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)'
+        : 'linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%)'
     }}>
+      {/* Formes géométriques d'arrière-plan */}
+      <div style={{
+        position: 'absolute', top: '-10%', right: '-5%', width: '50vw', height: '50vw',
+        background: 'var(--brand-glow)', borderRadius: '50%', filter: 'blur(100px)', opacity: 0.6, pointerEvents: 'none'
+      }} />
+      <div style={{
+        position: 'absolute', bottom: '-10%', left: '-5%', width: '40vw', height: '40vw',
+        background: 'var(--brand-glow)', borderRadius: '50%', filter: 'blur(100px)', opacity: 0.6, pointerEvents: 'none'
+      }} />
+
       <div style={{
         position: 'relative',
-        width: '100%', maxWidth: 460,
-        backgroundColor: isDark ? '#1e2130' : '#ffffff',
-        borderRadius: 16,
-        border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`,
-        padding: '20px 24px',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
-        animation: 'fadeIn 0.5s ease',
+        width: '100%', maxWidth: 500,
+        zIndex: 10,
+        animation: 'fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
       }}>
-        <div style={{ position: 'absolute', top: 12, right: 12, zIndex: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <ThemeToggle />
-          <i className="bi bi-moon-stars-fill" style={{ color: 'var(--text-muted)', fontSize: 14 }} />
-        </div>
-        <div style={{ textAlign: 'center', marginBottom: 12 }}>
-          <Logo size="sm" showTagline />
-        </div>
-
-        {!organisateurSuccess ? (
-          <>
-            <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 2 }}>
-          Créer mon compte
-        </h2>
-        <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 12, marginBottom: 12 }}>
-          Inscrivez-vous pour accéder à vos tickets ou gérer vos événements
-        </p>
-
-        {/* Tabs */}
-        <div style={{ display: 'flex', borderBottom: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`, marginBottom: 16 }}>
-          <button 
-            type="button"
-            onClick={() => setActiveTab('participant')}
-            style={{ flex: 1, padding: '10px', background: 'none', border: 'none', borderBottom: activeTab === 'participant' ? '2px solid #0D6EFD' : '2px solid transparent', color: activeTab === 'participant' ? '#0D6EFD' : 'var(--text-muted)', fontWeight: activeTab === 'participant' ? 700 : 500, cursor: 'pointer', transition: 'all 0.2s' }}
-          >
-            Participant
-          </button>
-          <button 
-            type="button"
-            onClick={() => setActiveTab('organisateur')}
-            style={{ flex: 1, padding: '10px', background: 'none', border: 'none', borderBottom: activeTab === 'organisateur' ? '2px solid #0D6EFD' : '2px solid transparent', color: activeTab === 'organisateur' ? '#0D6EFD' : 'var(--text-muted)', fontWeight: activeTab === 'organisateur' ? 700 : 500, cursor: 'pointer', transition: 'all 0.2s' }}
-          >
-            Organisateur
-          </button>
-        </div>
-
-        <form onSubmit={submit}>
-          {/* Row 1: Nom & Prénom */}
-          <div style={{ display: 'flex', gap: 12, marginBottom: 8, flexWrap: 'wrap' }}>
-            <div style={{ flex: '1 1 calc(50% - 6px)', minWidth: 150 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 2 }}>Nom *</label>
-              <div style={{ position: 'relative' }}>
-                <i className="bi bi-person" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                <input type="text" name="name" value={form.name} onChange={handle} required
-                  placeholder="Votre nom"
-                  style={{ ...inputStyle, paddingLeft: 36, ...(errors.name ? { borderColor: '#ef4444' } : {}) }} />
-              </div>
-              {renderError('name')}
-            </div>
-
-            <div style={{ flex: '1 1 calc(50% - 6px)', minWidth: 150 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 2 }}>Prénom</label>
-              <div style={{ position: 'relative' }}>
-                <i className="bi bi-person" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                <input type="text" name="prenom" value={form.prenom} onChange={handle}
-                  placeholder="Votre prénom"
-                  style={{ ...inputStyle, paddingLeft: 36, ...(errors.prenom ? { borderColor: '#ef4444' } : {}) }} />
-              </div>
-              {renderError('prenom')}
-            </div>
+        <div className="glass-panel" style={{ padding: '32px', borderRadius: 'var(--radius-xl)' }}>
+          <div style={{ position: 'absolute', top: 24, right: 24 }}>
+            <ThemeToggle />
+          </div>
+          
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <Logo size="sm" showTagline />
           </div>
 
-          {activeTab === 'participant' && (
+          {!organisateurSuccess ? (
             <>
-              {/* Sexe & Téléphone */}
-              <div style={{ display: 'flex', gap: 12, marginBottom: 8, flexWrap: 'wrap' }}>
-                <div style={{ flex: '1 1 calc(50% - 6px)', minWidth: 150 }}>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 2 }}>Sexe</label>
-                  <div style={{ position: 'relative' }}>
-                    <i className="bi bi-gender-ambiguous" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', zIndex: 2 }} />
-                    <CustomSelect
+              <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', textAlign: 'center', marginBottom: '4px', fontFamily: 'var(--font-heading)' }}>
+                Créer mon compte
+              </h2>
+              <p style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '24px' }}>
+                Inscrivez-vous pour accéder à vos tickets ou gérer vos événements
+              </p>
+
+              {/* Tabs */}
+              <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '24px' }}>
+                <button 
+                  type="button"
+                  onClick={() => setActiveTab('participant')}
+                  style={{ 
+                    flex: 1, padding: '12px', background: 'none', border: 'none', 
+                    borderBottom: activeTab === 'participant' ? '2px solid var(--brand-color)' : '2px solid transparent', 
+                    color: activeTab === 'participant' ? 'var(--brand-color)' : 'var(--text-muted)', 
+                    fontWeight: activeTab === 'participant' ? 700 : 500, cursor: 'pointer', transition: 'var(--transition-fast)' 
+                  }}
+                >
+                  Participant
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setActiveTab('organisateur')}
+                  style={{ 
+                    flex: 1, padding: '12px', background: 'none', border: 'none', 
+                    borderBottom: activeTab === 'organisateur' ? '2px solid var(--brand-color)' : '2px solid transparent', 
+                    color: activeTab === 'organisateur' ? 'var(--brand-color)' : 'var(--text-muted)', 
+                    fontWeight: activeTab === 'organisateur' ? 700 : 500, cursor: 'pointer', transition: 'var(--transition-fast)' 
+                  }}
+                >
+                  Organisateur
+                </button>
+              </div>
+
+              <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                  <Input
+                    label="Nom *"
+                    name="name"
+                    type="text"
+                    icon="bi-person"
+                    placeholder="Votre nom"
+                    value={form.name}
+                    onChange={handle}
+                    error={getError('name')}
+                    required
+                    containerStyle={{ flex: '1 1 calc(50% - 8px)', minWidth: 150 }}
+                  />
+                  <Input
+                    label="Prénom"
+                    name="prenom"
+                    type="text"
+                    icon="bi-person"
+                    placeholder="Votre prénom"
+                    value={form.prenom}
+                    onChange={handle}
+                    error={getError('prenom')}
+                    containerStyle={{ flex: '1 1 calc(50% - 8px)', minWidth: 150 }}
+                  />
+                </div>
+
+                {activeTab === 'participant' && (
+                  <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                    <Select
+                      label="Sexe"
                       name="sexe"
+                      icon="bi-gender-ambiguous"
                       value={form.sexe}
-                      onChange={(val) => {
-                        setForm({ ...form, sexe: val })
+                      onChange={(e) => {
+                        setForm({ ...form, sexe: e.target.value })
                         if (errors.sexe) setErrors({ ...errors, sexe: null })
                       }}
                       options={[
+                        { value: '', label: 'Sélectionner...' },
                         { value: 'M', label: 'Homme' },
                         { value: 'F', label: 'Femme' }
                       ]}
+                      error={getError('sexe')}
+                      containerStyle={{ flex: '1 1 calc(50% - 8px)', minWidth: 150 }}
+                    />
+                    <Input
+                      label="Téléphone"
+                      name="telephone"
+                      type="tel"
+                      icon="bi-telephone"
+                      placeholder="+226 00 00 00 00"
+                      value={form.telephone}
+                      onChange={handle}
+                      error={getError('telephone')}
+                      containerStyle={{ flex: '1 1 calc(50% - 8px)', minWidth: 150 }}
                     />
                   </div>
-                  {renderError('sexe')}
-                </div>
+                )}
 
-                <div style={{ flex: '1 1 calc(50% - 6px)', minWidth: 150 }}>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 2 }}>Téléphone</label>
-                  <div style={{ position: 'relative' }}>
-                    <i className="bi bi-telephone" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                    <input type="tel" name="telephone" value={form.telephone} onChange={handle}
-                      placeholder="+226 00 00 00 00"
-                      style={{ ...inputStyle, paddingLeft: 36, ...(errors.telephone ? { borderColor: '#ef4444' } : {}) }} />
-                  </div>
-                  {renderError('telephone')}
-                </div>
-              </div>
-
-              {/* Email (Full width) */}
-              <div style={{ marginBottom: 8 }}>
-                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 2 }}>Adresse email *</label>
-                <div style={{ position: 'relative' }}>
-                  <i className="bi bi-envelope" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                  <input type="email" name="email" value={form.email} onChange={handle} required
-                    placeholder="vous@exemple.com"
-                    style={{ ...inputStyle, paddingLeft: 36, ...(errors.email ? { borderColor: '#ef4444' } : {}) }} />
-                </div>
-                {renderError('email')}
-              </div>
-
-              {/* Row 3: Mots de passe */}
-              <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
-                <div style={{ flex: '1 1 calc(50% - 6px)', minWidth: 150 }}>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 2 }}>Mot de passe *</label>
-                  <div style={{ position: 'relative' }}>
-                    <i className="bi bi-lock" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                    <input type={showPwd ? 'text' : 'password'} name="password" value={form.password} onChange={handle} required
-                      placeholder="Min. 8 car."
-                      style={{ ...inputStyle, paddingLeft: 36, paddingRight: 36, ...(errors.password ? { borderColor: '#ef4444' } : {}) }} />
-                    <button type="button" onClick={() => setShowPwd(!showPwd)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4 }}>
-                      <i className={`bi ${showPwd ? 'bi-eye-slash' : 'bi-eye'}`} />
-                    </button>
-                  </div>
-                  {renderError('password')}
-                </div>
-
-                <div style={{ flex: '1 1 calc(50% - 6px)', minWidth: 150 }}>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 2 }}>Confirmer *</label>
-                  <div style={{ position: 'relative' }}>
-                    <i className="bi bi-lock-fill" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                    <input type={showConf ? 'text' : 'password'} name="password_confirmation" value={form.password_confirmation} onChange={handle} required
-                      placeholder="Confirmer"
-                      style={{ ...inputStyle, paddingLeft: 36, paddingRight: 36, ...(errors.password_confirmation ? { borderColor: '#ef4444' } : {}) }} />
-                    <button type="button" onClick={() => setShowConf(!showConf)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4 }}>
-                      <i className={`bi ${showConf ? 'bi-eye-slash' : 'bi-eye'}`} />
-                    </button>
-                  </div>
-                  {renderError('password_confirmation')}
-                </div>
-              </div>
-            </>
-          )}
-
-          {activeTab === 'organisateur' && (
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 2 }}>Adresse email *</label>
-              <div style={{ position: 'relative' }}>
-                <i className="bi bi-envelope" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                <input type="email" name="email" value={form.email} onChange={handle} required
+                <Input
+                  label="Adresse email *"
+                  name="email"
+                  type="email"
+                  icon="bi-envelope"
                   placeholder="vous@exemple.com"
-                  style={{ ...inputStyle, paddingLeft: 36, ...(errors.email ? { borderColor: '#ef4444' } : {}) }} />
+                  value={form.email}
+                  onChange={handle}
+                  error={getError('email')}
+                  required
+                />
+
+                {activeTab === 'organisateur' && (
+                  <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '-8px' }}>
+                    <i className="bi bi-info-circle me-1" /> Vous recevrez vos accès de connexion par email.
+                  </p>
+                )}
+
+                {activeTab === 'participant' && (
+                  <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                    <div style={{ position: 'relative', flex: '1 1 calc(50% - 8px)', minWidth: 150 }}>
+                      <Input
+                        label="Mot de passe *"
+                        name="password"
+                        type={showPwd ? 'text' : 'password'}
+                        icon="bi-lock"
+                        placeholder="Min. 8 car."
+                        value={form.password}
+                        onChange={handle}
+                        error={getError('password')}
+                        required
+                        style={{ paddingRight: '40px' }}
+                      />
+                      <button type="button" onClick={() => setShowPwd(!showPwd)} style={{ position: 'absolute', right: '12px', top: getError('password') ? '38px' : '44px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 0 }}>
+                        <i className={`bi ${showPwd ? 'bi-eye-slash' : 'bi-eye'}`} />
+                      </button>
+                    </div>
+
+                    <div style={{ position: 'relative', flex: '1 1 calc(50% - 8px)', minWidth: 150 }}>
+                      <Input
+                        label="Confirmer *"
+                        name="password_confirmation"
+                        type={showConf ? 'text' : 'password'}
+                        icon="bi-lock-fill"
+                        placeholder="Confirmer"
+                        value={form.password_confirmation}
+                        onChange={handle}
+                        error={getError('password_confirmation')}
+                        required
+                        style={{ paddingRight: '40px' }}
+                      />
+                      <button type="button" onClick={() => setShowConf(!showConf)} style={{ position: 'absolute', right: '12px', top: getError('password_confirmation') ? '38px' : '44px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 0 }}>
+                        <i className={`bi ${showConf ? 'bi-eye-slash' : 'bi-eye'}`} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div style={{ marginTop: '8px', background: 'var(--bg-surface)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+                  <Checkbox
+                    checked={form.accepte_cgu}
+                    onChange={(e) => {
+                      setForm({ ...form, accepte_cgu: e.target.checked })
+                      if (errors.accepte_cgu) setErrors({ ...errors, accepte_cgu: null })
+                    }}
+                    label={
+                      <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                        J'ai lu et j'accepte les <Link to="/conditions" target="_blank" style={{ color: 'var(--brand-color)', fontWeight: 600, textDecoration: 'none' }}>Conditions Générales d'Utilisation</Link> et la <Link to="/confidentialite" target="_blank" style={{ color: 'var(--brand-color)', fontWeight: 600, textDecoration: 'none' }}>Politique de Confidentialité</Link>.
+                      </span>
+                    }
+                  />
+                  {getError('accepte_cgu') && <div style={{ color: 'var(--danger)', fontSize: '12px', marginTop: '4px', marginLeft: '30px' }}>{getError('accepte_cgu')}</div>}
+                </div>
+
+                <Button
+                  type="submit"
+                  variant="primary"
+                  fullWidth
+                  loading={loading}
+                  disabled={!form.accepte_cgu}
+                  icon="bi-person-plus"
+                  style={{ marginTop: '8px', padding: '14px', fontSize: '15px' }}
+                >
+                  {activeTab === 'participant' ? "S'inscrire" : "Créer mon compte organisateur"}
+                </Button>
+              </form>
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', animation: 'fadeIn 0.5s ease' }}>
+              <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(16,185,129,0.1)', color: 'var(--success)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, margin: '0 auto 24px' }}>
+                <i className="bi bi-check-lg" />
               </div>
-              {renderError('email')}
-              <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>
-                Vous recevrez un email contenant votre identifiant et votre mot de passe temporaire pour vous connecter.
-              </p>
+              <h2 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px', fontFamily: 'var(--font-heading)' }}>Compte créé !</h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '32px' }}>Voici vos accès temporaires. Veuillez les conserver précieusement.</p>
+              
+              <div style={{ background: 'var(--bg-surface)', padding: '20px', borderRadius: 'var(--radius-lg)', marginBottom: '32px', textAlign: 'left', border: '1px solid var(--border)' }}>
+                <div style={{ marginBottom: '16px' }}>
+                  <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 600, display: 'block', marginBottom: '8px' }}>Identifiant de connexion</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-input)', padding: '12px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+                    <span style={{ fontFamily: 'monospace', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>{organisateurSuccess.identifiant}</span>
+                    <button onClick={() => { navigator.clipboard.writeText(organisateurSuccess.identifiant); toast.success('Copié !') }} style={{ background: 'none', border: 'none', color: 'var(--brand-color)', cursor: 'pointer' }}><i className="bi bi-copy" /></button>
+                  </div>
+                </div>
+                <div>
+                  <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 600, display: 'block', marginBottom: '8px' }}>Mot de passe temporaire</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-input)', padding: '12px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+                    <span style={{ fontFamily: 'monospace', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>{organisateurSuccess.temp_password}</span>
+                    <button onClick={() => { navigator.clipboard.writeText(organisateurSuccess.temp_password); toast.success('Copié !') }} style={{ background: 'none', border: 'none', color: 'var(--brand-color)', cursor: 'pointer' }}><i className="bi bi-copy" /></button>
+                  </div>
+                </div>
+              </div>
+
+              <Button 
+                onClick={async () => {
+                  try {
+                    await login(organisateurSuccess.identifiant, organisateurSuccess.temp_password)
+                    navigate('/organisateur')
+                  } catch {
+                    toast.error("Erreur de connexion auto.")
+                  }
+                }} 
+                variant="primary"
+                fullWidth
+                style={{ padding: '14px', fontSize: '15px' }}
+                iconPosition="right"
+                icon="bi-arrow-right"
+              >
+                Continuer vers mon espace
+              </Button>
             </div>
           )}
 
-          <button type="submit" disabled={loading} className="btn btn-brand w-100" style={{
-            padding: '13px',
-            fontSize: 15,
-            fontWeight: 600,
-            borderRadius: 8,
-            border: 'none',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8
-          }}>
-            {loading ? (
-              <>
-                <span style={{ width: 18, height: 18, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} />
-                Création…
-              </>
-            ) : (
-              <><i className="bi bi-person-plus" /> {activeTab === 'participant' ? "S'inscrire" : "Créer mon compte organisateur"}</>
-            )}
-          </button>
-        </form>
-        </>
-        ) : (
-          <div style={{ textAlign: 'center', animation: 'fadeIn 0.5s ease' }}>
-            <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(16,185,129,0.1)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, margin: '0 auto 16px' }}>
-              <i className="bi bi-check-lg" />
-            </div>
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>Compte créé !</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>Voici vos accès temporaires. Copiez-les avant de continuer.</p>
-            
-            <div style={{ background: isDark ? '#1a1d27' : '#f8fafc', padding: '16px', borderRadius: 12, marginBottom: 24, textAlign: 'left', border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}` }}>
-              <div style={{ marginBottom: 12 }}>
-                <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600, display: 'block', marginBottom: 4 }}>Identifiant</span>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: isDark ? '#252839' : '#fff', padding: '8px 12px', borderRadius: 8, border: `1px solid ${isDark ? '#334155' : '#e2e8f0'}` }}>
-                  <span style={{ fontFamily: 'monospace', fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{organisateurSuccess.identifiant}</span>
-                  <button onClick={() => { navigator.clipboard.writeText(organisateurSuccess.identifiant); toast.success('Copié !') }} style={{ background: 'none', border: 'none', color: '#0D6EFD', cursor: 'pointer' }}><i className="bi bi-copy" /></button>
-                </div>
-              </div>
-              <div>
-                <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600, display: 'block', marginBottom: 4 }}>Mot de passe temporaire</span>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: isDark ? '#252839' : '#fff', padding: '8px 12px', borderRadius: 8, border: `1px solid ${isDark ? '#334155' : '#e2e8f0'}` }}>
-                  <span style={{ fontFamily: 'monospace', fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{organisateurSuccess.temp_password}</span>
-                  <button onClick={() => { navigator.clipboard.writeText(organisateurSuccess.temp_password); toast.success('Copié !') }} style={{ background: 'none', border: 'none', color: '#0D6EFD', cursor: 'pointer' }}><i className="bi bi-copy" /></button>
-                </div>
-              </div>
-            </div>
-
-            <button 
-              onClick={async () => {
-                try {
-                  await login(organisateurSuccess.identifiant, organisateurSuccess.temp_password)
-                  navigate('/organisateur/dashboard')
-                } catch (err) {
-                  toast.error("Erreur de connexion auto.")
-                }
-              }} 
-              className="btn btn-brand w-100" 
-              style={{ padding: '13px', fontSize: 15, fontWeight: 600, borderRadius: 8, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-              Continuer vers mon espace <i className="bi bi-arrow-right" />
-            </button>
+          <div style={{ textAlign: 'center', marginTop: '32px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+            Déjà un compte ?{' '}
+            <Link to="/login" style={{ color: 'var(--brand-color)', fontWeight: 700, textDecoration: 'none' }}>
+              Se connecter
+            </Link>
           </div>
-        )}
-
-        <div style={{ textAlign: 'center', marginTop: 24, fontSize: 14, color: 'var(--text-secondary)' }}>
-          Déjà un compte ?{' '}
-          <Link to="/login" style={{ color: 'var(--brand-color)', fontWeight: 700, textDecoration: 'none' }}>
-            Se connecter
-          </Link>
-        </div>
-        <div style={{ textAlign: 'center', marginTop: 10, fontSize: 13 }}>
-          <Link to="/" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>
-            <i className="bi bi-arrow-left" /> Retour à l'accueil
-          </Link>
+          
+          <div style={{ textAlign: 'center', marginTop: '16px' }}>
+            <Link to="/" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <i className="bi bi-arrow-left" /> Retour à l'accueil
+            </Link>
+          </div>
         </div>
       </div>
     </div>

@@ -25,6 +25,7 @@ const navByRole = {
       ]
     },
     { to: '/admin/mes-tickets', icon: 'bi-ticket-perforated', label: 'Mes Tickets' },
+    { to: '/admin/finances', icon: 'bi-cash-coin', label: 'Finances' },
     { to: '/admin/logs',       icon: 'bi-terminal-fill',     label: 'Logs Système'   },
   ],
   organisateur: [
@@ -39,6 +40,7 @@ const navByRole = {
     },
     { to: '/organisateur/scans', icon: 'bi-qr-code-scan', label: 'Suivi des Scans' },
     { to: '/organisateur/agents',     icon: 'bi-person-badge',    label: 'Mes Agents'      },
+    { to: '/organisateur/finances',   icon: 'bi-wallet2',         label: 'Mes Finances'    },
     { to: '/organisateur/mes-tickets', icon: 'bi-ticket-perforated', label: 'Mes Tickets' },
   ],
   agent: [
@@ -57,6 +59,7 @@ const roleConfig = {
 }
 
 import { useState, useEffect } from 'react'
+import Button from '../ui/Button'
 
 export default function Sidebar({ isOpen, onClose }) {
   const { user, logout } = useAuth()
@@ -221,14 +224,23 @@ export default function Sidebar({ isOpen, onClose }) {
             <span>Paramètres</span>
           </NavLink>
 
-          <button
+          <Button
             onClick={handleLogout}
-            className="btn btn-outline-danger w-100"
-            style={{ fontSize: 13, padding: '9px', borderRadius: 10 }}
+            variant="ghost"
+            fullWidth
+            style={{ color: 'var(--danger)', justifyContent: 'flex-start', padding: '10px 14px' }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
+              e.currentTarget.style.color = 'var(--danger)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = 'var(--text-secondary)';
+            }}
+            icon="bi-box-arrow-left"
           >
-            <i className="bi bi-box-arrow-left me-2" />
             Déconnexion
-          </button>
+          </Button>
         </div>
       </aside>
     </>

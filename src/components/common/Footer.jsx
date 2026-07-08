@@ -100,11 +100,18 @@ export default function Footer() {
             gap: 16,
             fontSize: 13 
           }}>
-            <div>© {new Date().getFullYear()} SecurePass. Tous droits réservés.</div>
-            <div style={{ display: 'flex', gap: 24 }}>
-               <a href="#" className="footer-link" style={{ fontSize: 12 }}>Conditions</a>
-               <a href="#" className="footer-link" style={{ fontSize: 12 }}>Confidentialité</a>
-               <a href="#" className="footer-link" style={{ fontSize: 12 }}>Contact</a>
+            <div>
+              © {new Date().getFullYear()} SecurePass. Tous droits réservés.
+              <span style={{ marginLeft: 8, opacity: 0.5 }}>| v1.0</span>
+            </div>
+            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+               <Link to="/a-propos" className="footer-link" style={{ fontSize: 12 }}>À Propos</Link>
+               <Link to="/faq" className="footer-link" style={{ fontSize: 12 }}>Centre d'aide / FAQ</Link>
+               <Link to="/conditions" className="footer-link" style={{ fontSize: 12 }}>CGU</Link>
+               <Link to="/confidentialite" className="footer-link" style={{ fontSize: 12 }}>Confidentialité</Link>
+               <Link to="/cookies" className="footer-link" style={{ fontSize: 12 }}>Cookies</Link>
+               <Link to="/remboursement" className="footer-link" style={{ fontSize: 12 }}>Remboursement</Link>
+               <Link to="/contact" className="footer-link" style={{ fontSize: 12 }}>Contact</Link>
             </div>
           </div>
         </div>

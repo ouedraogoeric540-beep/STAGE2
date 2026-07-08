@@ -4,6 +4,10 @@ import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import api from '../../api/axios'
 import toast from 'react-hot-toast'
+import DashboardStatCard from '../../components/common/dashboard/DashboardStatCard'
+import DashboardCard from '../../components/common/dashboard/DashboardCard'
+import DashboardTable from '../../components/common/dashboard/DashboardTable'
+import StatusBadge from '../../components/common/dashboard/StatusBadge'
 
 export default function AgentDashboard() {
   const { user } = useAuth()
@@ -40,16 +44,27 @@ export default function AgentDashboard() {
     { label: 'Déjà Utilisés/Invalides', value: stats.scansInvalides, icon: 'bi-x-circle', color: '#dc3545', textColor: '#fff' },
   ]
 
+  if (loading) return (
+    <Layout title="Dashboard Agent">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 400 }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ width: 48, height: 48, border: '3px solid var(--border)', borderTopColor: '#0D6EFD', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
+          <p style={{ color: 'var(--text-muted)' }}>Chargement des données…</p>
+        </div>
+      </div>
+    </Layout>
+  )
+
   return (
     <Layout title="Dashboard Agent">
-      <div className="animate-fadeIn">
+      <div style={{ animation: 'fadeIn 0.5s ease' }}>
         
         {/* Salutation */}
         <div style={{ marginBottom: 28 }}>
-          <h2 className="sp-page-title">Bonjour, {user?.name} 👋</h2>
+          <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>Bonjour, {user?.name} 👋</h2>
         </div>
 
-        {/* Bouton Scanner (Utilise tes classes de boutons) */}
+        {/* Bouton Scanner */}
         <div className="card" style={{ 
           background: 'var(--gradient-brand)', 
           padding: '24px', 
@@ -58,101 +73,64 @@ export default function AgentDashboard() {
           flexDirection: 'row',
           alignItems: 'center', 
           justifyContent: 'space-between',
-          border: 'none'
+          border: 'none',
+          borderRadius: 16
         }}>
           <div style={{ color: '#fff' }}>
             <div style={{ fontSize: 20, fontWeight: 800 }}>Scanner un ticket</div>
-            <div style={{ opacity: 0.9 }}>Accédez au scanner QR Code pour valider les entrées</div>
+            <div style={{ opacity: 0.9, marginTop: 4, fontSize: 14 }}>Accédez au scanner QR Code pour valider les entrées</div>
           </div>
-          <button onClick={() => navigate('/agent/scanner')} className="btn" style={{ background: '#fff', color: 'var(--brand-color)' }}>
+          <button onClick={() => navigate('/agent/scanner')} className="btn" style={{ background: '#fff', color: 'var(--brand-color)', fontWeight: 700, padding: '10px 20px', borderRadius: 10 }}>
             <i className="bi bi-qr-code-scan" style={{ marginRight: 8 }} />
             Ouvrir le scanner
           </button>
         </div>
 
         {/* Stats */}
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: 40 }}><div className="sp-spinner" style={{ margin: '0 auto' }} /></div>
-        ) : (
-          <>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))', gap: 20, marginBottom: 32 }}>
-              {statCards.map((card, i) => (
-                <div key={i} style={{
-                  backgroundColor: card.color,
-                  borderRadius: 8,
-                  position: 'relative',
-                  overflow: 'hidden',
-                  color: card.textColor,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                  animation: `fadeIn 0.4s ease ${i * 0.08}s both`,
-                  transition: 'transform 0.2s',
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
-                >
-                  <div style={{ padding: '20px', position: 'relative', zIndex: 1 }}>
-                    <div style={{ fontSize: '32px', fontWeight: 'bold', lineHeight: 1.2 }}>{card.value}</div>
-                    <div style={{ fontSize: '15px', marginTop: 5 }}>{card.label}</div>
-                  </div>
-                  
-                  <i className={`bi ${card.icon}`} style={{
-                    position: 'absolute',
-                    top: 10,
-                    right: 15,
-                    fontSize: '70px',
-                    color: card.textColor === '#000' ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.15)', 
-                    zIndex: 0,
-                    transition: 'transform 0.3s ease',
-                  }} />
-                  
-                  <div style={{
-                    backgroundColor: 'rgba(0,0,0,0.1)',
-                    padding: '6px 0',
-                    textAlign: 'center',
-                    fontSize: '13px',
-                    zIndex: 1,
-                    cursor: 'pointer',
-                    color: card.textColor
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.15)' }}
-                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.1)' }}
-                  >
-                    Plus d'infos <i className="bi bi-arrow-right-circle" style={{ marginLeft: 4 }} />
-                  </div>
-                </div>
-              ))}
-            </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 32 }}>
+          {statCards.map((card, i) => (
+            <DashboardStatCard 
+              key={i} 
+              label={card.label} 
+              value={card.value} 
+              icon={card.icon} 
+              bg={card.color} 
+              textColor={card.textColor}
+            />
+          ))}
+        </div>
 
-            {/* Historique des scans */}
-            <div className="card">
-              <div className="card-header">Mes derniers scans</div>
-              <div className="table-responsive">
-                <table className="table" style={{ minWidth: 800 }}>
-                  <thead>
-                    <tr><th>Événement</th><th>Participant</th><th>Résultat</th><th>Date</th></tr>
-                  </thead>
-                  <tbody>
-                    {scans.slice(0, 8).map((scan) => (
-                      <tr key={scan.id}>
-                        <td>{scan.evenement?.titre || '—'}</td>
-                        <td>{scan.ticket?.participant?.nom || '—'}</td>
-                        <td>
-                          <span className={`sp-badge sp-badge-${scan.resultat === 'valide' ? 'valide' : 'expire'}`}>
-                            {scan.resultat}
-                          </span>
-                        </td>
-                        <td style={{ fontSize: 12 }}>{new Date(scan.date_scan).toLocaleString()}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </>
-        )}
+        {/* Historique des scans */}
+        <DashboardCard title="Mes derniers scans" icon="bi-clock-history" noPadding={true}>
+          <DashboardTable 
+            headers={['Participant', 'Événement', 'Date du scan', 'Statut']}
+            isEmpty={scans.length === 0}
+            emptyText="Aucun scan récent."
+            emptyIcon="bi-qr-code"
+          >
+            {scans.slice(0, 8).map((scan) => (
+              <tr key={scan.id} 
+                  style={{ borderTop: '1px solid var(--border)', transition: 'background 0.15s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-surface)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              >
+                <td style={{ padding: '14px 16px', fontWeight: 700, color: 'var(--text-primary)', fontSize: 14 }}>
+                  {scan.ticket?.participant?.nom || 'Ticket Anonyme'}
+                </td>
+                <td style={{ padding: '14px 16px', color: 'var(--text-secondary)' }}>
+                  <i className="bi bi-calendar-event me-1" /> {scan.evenement?.titre || 'Inconnu'}
+                </td>
+                <td style={{ padding: '14px 16px', color: 'var(--text-secondary)' }}>
+                  {new Date(scan.date_scan).toLocaleString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                </td>
+                <td style={{ padding: '14px 16px' }}>
+                  <StatusBadge statut={scan.resultat} />
+                </td>
+              </tr>
+            ))}
+          </DashboardTable>
+        </DashboardCard>
+
       </div>
     </Layout>
   )

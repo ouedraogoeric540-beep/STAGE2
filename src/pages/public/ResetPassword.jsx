@@ -26,6 +26,7 @@ export default function ResetPassword() {
     const urlEmail = params.get('email')
 
     if (urlToken && urlEmail) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setToken(urlToken)
       setEmail(urlEmail)
     } else {

@@ -39,106 +39,52 @@ export default function AdminLogs() {
           <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>Historique de toutes les actions sur la plateforme</p>
         </div>
 
-        <div className="table-responsive" style={{ backgroundColor: isDark ? '#1e2130' : '#fff', borderRadius: 16, border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`, overflowX: 'auto' }}>
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: 60 }}>
-              <div style={{ width: 36, height: 36, border: '3px solid var(--border)', borderTopColor: '#0D6EFD', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto' }} />
+        {/* Liste Logs Soft UI */}
+        {loading ? (
+          <div className="text-center p-5"><div className="sp-spinner mx-auto" /></div>
+        ) : logs.length === 0 ? (
+          <div className="text-center p-5 text-muted">
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: isDark ? '#252839' : '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+              <i className="bi bi-journal-x" style={{ fontSize: 28, color: 'var(--text-secondary)' }} />
             </div>
-          ) : (
-            <div className="table-responsive">
-              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 900 }}>
-                <thead>
-                  <tr style={{ borderBottom: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`, backgroundColor: isDark ? '#1a1d2d' : '#f8fafc' }}>
-                    {['Utilisateur', 'Action', 'Détails', 'Réseau (IP)', 'Date & Heure'].map((h) => (
-                      <th key={h} style={{ padding: '16px 20px', textAlign: 'left', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {logs.map((log) => {
-                    const actionDetails = getActionDetails(log.action)
-                    const dateObj = new Date(log.created_at)
-                    return (
-                      <tr 
-                        key={log.id} 
-                        style={{ borderBottom: `1px solid ${isDark ? '#2a2d3e' : '#f0f0f0'}`, transition: 'all 0.2s ease', cursor: 'default' }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = isDark ? '#252839' : '#f8f9ff'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                      >
-                        {/* Utilisateur */}
-                        <td style={{ padding: '16px 20px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <div style={{ 
-                              width: 38, height: 38, borderRadius: 12, 
-                              background: log.user ? 'var(--brand-glow)' : (isDark ? '#2a2d3e' : '#e2e8f0'),
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              color: log.user ? 'var(--brand-color)' : 'var(--text-muted)',
-                              fontSize: 16
-                            }}>
-                              <i className={log.user ? "bi bi-person-fill" : "bi bi-robot"} />
-                            </div>
-                            <div>
-                              <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: 13 }}>
-                                {log.user?.name || 'Système Autonome'}
-                              </div>
-                              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
-                                {log.user?.email || '—'}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
+            <h4 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>Aucun log disponible</h4>
+            <p style={{ fontSize: 13 }}>L'historique des actions est vide pour le moment.</p>
+          </div>
+        ) : (
+          <div className="d-flex flex-column gap-2 mt-4">
+            {logs.map((log) => {
+              const actionDetails = getActionDetails(log.action)
+              const dateObj = new Date(log.created_at)
+              return (
+                <div key={log.id} className="soft-card-row" style={{ cursor: 'default' }}>
+                  <div className="d-flex flex-column gap-2 flex-grow-1">
+                    <div className="d-flex align-items-center gap-3">
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 20, background: `${actionDetails.color}15`, border: `1px solid ${actionDetails.color}30` }}>
+                        <i className={actionDetails.icon} style={{ color: actionDetails.color, fontSize: 11 }} />
+                        <span style={{ fontSize: 10, fontWeight: 700, color: actionDetails.color, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                          {log.action}
+                        </span>
+                      </div>
+                      <div className="d-flex align-items-center gap-2">
+                        <i className={log.user ? "bi bi-person-fill" : "bi bi-robot"} style={{ color: log.user ? 'var(--brand-color)' : 'var(--text-muted)' }} />
+                        <span style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: 14 }}>{log.user?.name || 'Système Autonome'}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="text-muted" style={{ fontSize: 13, lineHeight: 1.5, wordBreak: 'break-word', paddingLeft: 8 }}>
+                      {log.details || <span style={{ fontStyle: 'italic' }}>Aucun détail</span>}
+                    </div>
 
-                        {/* Action */}
-                        <td style={{ padding: '16px 20px' }}>
-                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 20, background: `${actionDetails.color}15`, border: `1px solid ${actionDetails.color}30` }}>
-                            <i className={actionDetails.icon} style={{ color: actionDetails.color, fontSize: 12 }} />
-                            <span style={{ fontSize: 11, fontWeight: 700, color: actionDetails.color, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                              {log.action}
-                            </span>
-                          </div>
-                        </td>
-
-                        {/* Détails */}
-                        <td style={{ padding: '16px 20px', maxWidth: 300 }}>
-                          <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, wordBreak: 'break-word' }}>
-                            {log.details || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Aucun détail</span>}
-                          </div>
-                        </td>
-
-                        {/* IP */}
-                        <td style={{ padding: '16px 20px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace', background: isDark ? '#141827' : '#f1f5f9', padding: '4px 10px', borderRadius: 8, width: 'fit-content' }}>
-                            <i className="bi bi-hdd-network" />
-                            {log.ip_address || '—'}
-                          </div>
-                        </td>
-
-                        {/* Date */}
-                        <td style={{ padding: '16px 20px' }}>
-                          <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>
-                            {dateObj.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
-                          </div>
-                          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
-                            <i className="bi bi-clock me-1" />
-                            {dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-              {logs.length === 0 && (
-                <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
-                  <div style={{ width: 64, height: 64, borderRadius: '50%', background: isDark ? '#252839' : '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                    <i className="bi bi-journal-x" style={{ fontSize: 28, color: 'var(--text-secondary)' }} />
+                    <div className="d-flex gap-3 flex-wrap" style={{ fontSize: 12, fontWeight: 500, paddingLeft: 8 }}>
+                      <span style={{ color: 'var(--text-secondary)' }}><i className="bi bi-clock me-1"/> {dateObj.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                      <span style={{ fontFamily: 'monospace', color: 'var(--text-secondary)' }}><i className="bi bi-hdd-network"/> {log.ip_address || '—'}</span>
+                    </div>
                   </div>
-                  <h4 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>Aucun log disponible</h4>
-                  <p style={{ fontSize: 13 }}>L'historique des actions est vide pour le moment.</p>
                 </div>
-              )}
-            </div>
-          )}
+              )
+            })}
+          </div>
+        )}
 
           {/* Pagination Intelligente */}
           {meta.last_page > 1 && (
@@ -212,7 +158,6 @@ export default function AdminLogs() {
               </button>
             </div>
           )}
-        </div>
       </div>
     </Layout>
   )

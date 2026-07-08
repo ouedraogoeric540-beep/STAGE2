@@ -7,6 +7,7 @@ import Footer from '../../components/common/Footer'
 import api from '../../api/axios'
 import toast from 'react-hot-toast'
 import EventCard from '../../components/public/EventCard'
+import useDebounce from '../../hooks/useDebounce'
 
 
 
@@ -22,29 +23,28 @@ export default function Home() {
   const [totalElements, setTotalElements] = useState(0)
   const [filterType, setFilterType] = useState('tous') // 'tous', 'gratuit', 'payant'
 
-  useEffect(() => {
-    setLoading(true)
-    const timeoutId = setTimeout(() => {
-      api.get('/evenements', { params: { search: recherche, type: filterType, page: page } })
-        .then((r) => {
-          // Si le backend renvoie une structure paginée (ex: r.data.data), on l'utilise.
-          // Sinon (par ex: pas encore à jour), on utilise le tableau.
-          if (r.data && r.data.data) {
-            setEvenements(r.data.data)
-            setTotalPages(r.data.last_page || 1)
-            setTotalElements(r.data.total || r.data.data.length)
-          } else {
-            setEvenements(Array.isArray(r.data) ? r.data : [])
-            setTotalPages(1)
-            setTotalElements(Array.isArray(r.data) ? r.data.length : 0)
-          }
-        })
-        .catch(() => toast.error('Erreur lors du chargement des événements.'))
-        .finally(() => setLoading(false))
-    }, 300)
+  const debouncedRecherche = useDebounce(recherche, 300)
 
-    return () => clearTimeout(timeoutId)
-  }, [page, recherche, filterType])
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLoading(true)
+    api.get('/evenements', { params: { search: debouncedRecherche, type: filterType, page: page } })
+      .then((r) => {
+        // Si le backend renvoie une structure paginée (ex: r.data.data), on l'utilise.
+        // Sinon (par ex: pas encore à jour), on utilise le tableau.
+        if (r.data && r.data.data) {
+          setEvenements(r.data.data)
+          setTotalPages(r.data.last_page || 1)
+          setTotalElements(r.data.total || r.data.data.length)
+        } else {
+          setEvenements(Array.isArray(r.data) ? r.data : [])
+          setTotalPages(1)
+          setTotalElements(Array.isArray(r.data) ? r.data.length : 0)
+        }
+      })
+      .catch(() => toast.error('Erreur lors du chargement des événements.'))
+      .finally(() => setLoading(false))
+  }, [debouncedRecherche, filterType, page])
 
   const evenementPage = evenements
 

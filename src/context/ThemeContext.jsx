@@ -2,37 +2,37 @@ import { createContext, useContext, useEffect, useState } from 'react'
 
 const ThemeContext = createContext()
 
-// ─── Palettes de couleur disponibles ───────────────────────────────────────
+// ─── Palettes de couleur disponibles (Design System) ─────────────────────────
 export const PALETTES = {
   blue: {
     name: 'Bleu',
-    primary:      '#2563eb',
-    primaryDark:  '#1d4ed8',
-    primaryLight: '#60a5fa',
+    primary:      '#0D6EFD',
+    primaryDark:  '#0a58ca',
+    primaryLight: '#3b82f6',
     secondary:    '#6366f1',
-    glow:         'rgba(37,99,235,0.15)',
-    gradient:     'linear-gradient(135deg, #2563eb, #6366f1)',
-    swatch:       '#2563eb',
+    glow:         'rgba(13, 110, 253, 0.2)',
+    gradient:     'linear-gradient(135deg, #0D6EFD, #3b82f6)',
+    swatch:       '#0D6EFD',
   },
-  pink: {
-    name: 'Rose',
-    primary:      '#ec4899',
-    primaryDark:  '#db2777',
-    primaryLight: '#f472b6',
-    secondary:    '#a855f7',
-    glow:         'rgba(236,72,153,0.15)',
-    gradient:     'linear-gradient(135deg, #ec4899, #a855f7)',
-    swatch:       '#ec4899',
+  indigo: {
+    name: 'Indigo',
+    primary:      '#4f46e5',
+    primaryDark:  '#4338ca',
+    primaryLight: '#818cf8',
+    secondary:    '#0ea5e9',
+    glow:         'rgba(79, 70, 229, 0.2)',
+    gradient:     'linear-gradient(135deg, #4f46e5, #818cf8)',
+    swatch:       '#4f46e5',
   },
-  red: {
-    name: 'Rouge',
-    primary:      '#ef4444',
-    primaryDark:  '#dc2626',
-    primaryLight: '#f87171',
-    secondary:    '#f97316',
-    glow:         'rgba(239,68,68,0.15)',
-    gradient:     'linear-gradient(135deg, #ef4444, #f97316)',
-    swatch:       '#ef4444',
+  violet: {
+    name: 'Violet',
+    primary:      '#8b5cf6',
+    primaryDark:  '#7c3aed',
+    primaryLight: '#a78bfa',
+    secondary:    '#d946ef',
+    glow:         'rgba(139, 92, 246, 0.2)',
+    gradient:     'linear-gradient(135deg, #8b5cf6, #a78bfa)',
+    swatch:       '#8b5cf6',
   },
   green: {
     name: 'Vert',
@@ -40,19 +40,39 @@ export const PALETTES = {
     primaryDark:  '#059669',
     primaryLight: '#34d399',
     secondary:    '#06b6d4',
-    glow:         'rgba(16,185,129,0.15)',
-    gradient:     'linear-gradient(135deg, #10b981, #06b6d4)',
+    glow:         'rgba(16, 185, 129, 0.2)',
+    gradient:     'linear-gradient(135deg, #10b981, #34d399)',
     swatch:       '#10b981',
   },
-  purple: {
-    name: 'Violet',
-    primary:      '#8b5cf6',
-    primaryDark:  '#7c3aed',
-    primaryLight: '#a78bfa',
-    secondary:    '#ec4899',
-    glow:         'rgba(139,92,246,0.15)',
-    gradient:     'linear-gradient(135deg, #8b5cf6, #ec4899)',
-    swatch:       '#8b5cf6',
+  turquoise: {
+    name: 'Turquoise',
+    primary:      '#06b6d4',
+    primaryDark:  '#0891b2',
+    primaryLight: '#22d3ee',
+    secondary:    '#3b82f6',
+    glow:         'rgba(6, 182, 212, 0.2)',
+    gradient:     'linear-gradient(135deg, #06b6d4, #22d3ee)',
+    swatch:       '#06b6d4',
+  },
+  red: {
+    name: 'Rouge',
+    primary:      '#ef4444',
+    primaryDark:  '#dc2626',
+    primaryLight: '#f87171',
+    secondary:    '#f97316',
+    glow:         'rgba(239, 68, 68, 0.2)',
+    gradient:     'linear-gradient(135deg, #ef4444, #f87171)',
+    swatch:       '#ef4444',
+  },
+  orange: {
+    name: 'Orange',
+    primary:      '#f97316',
+    primaryDark:  '#ea580c',
+    primaryLight: '#fb923c',
+    secondary:    '#eab308',
+    glow:         'rgba(249, 115, 22, 0.2)',
+    gradient:     'linear-gradient(135deg, #f97316, #fb923c)',
+    swatch:       '#f97316',
   },
 }
 
@@ -66,7 +86,7 @@ function applyPalette(palette) {
   el.style.setProperty('--brand-color',     palette.primary)
   el.style.setProperty('--brand-glow',      palette.glow)
   el.style.setProperty('--gradient-brand',  palette.gradient)
-  el.style.setProperty('--shadow-brand',    `0 4px 14px ${palette.glow}`)
+  el.style.setProperty('--shadow-brand',    `0 8px 24px ${palette.glow}`)
 }
 
 // ─── Provider ───────────────────────────────────────────────────────────────

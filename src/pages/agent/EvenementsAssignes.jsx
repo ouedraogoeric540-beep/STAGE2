@@ -36,75 +36,29 @@ export default function EvenementsAssignes() {
             <p style={{ color: 'var(--text-muted)' }}>Vous n'avez aucun événement assigné pour le moment.</p>
           </div>
         ) : (
-          <div className="event-grid">
+          <div className="d-flex flex-column gap-2 mt-4">
             {evenements.map((ev) => (
-              <div key={ev.id} className="card" style={{ 
-                border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`,
-                overflow: 'hidden', borderRadius: 16
-              }}>
-                <div style={{ 
-                  height: 100, 
-                  background: 'var(--gradient-brand)',
-                  padding: 20,
-                  display: 'flex',
-                  alignItems: 'flex-end',
-                  position: 'relative'
-                }}>
-                  <div style={{ position: 'absolute', top: 12, right: 12, background: 'rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: 20, color: '#fff', fontSize: 12, fontWeight: 600 }}>
-                    <i className="bi bi-calendar3 me-1" /> {new Date(ev.date).toLocaleDateString()}
+              <div key={ev.id} className="soft-card-row">
+                <div className="d-flex flex-column gap-2 flex-grow-1">
+                  <div className="d-flex align-items-center gap-2">
+                    <h5 style={{ margin: 0, fontWeight: 800, fontSize: 16 }}>{ev.titre}</h5>
+                    <span className="badge-soft badge-soft-primary" style={{ fontSize: 10 }}>
+                      <i className="bi bi-calendar-event me-1" />
+                      {new Date(ev.date).toLocaleDateString('fr-FR')}
+                    </span>
                   </div>
-                  <h3 style={{ color: '#fff', margin: 0, fontSize: 18, fontWeight: 700, textShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                    {ev.titre}
-                  </h3>
+                  <div className="d-flex flex-wrap gap-2 mt-2" style={{ fontSize: 12, fontWeight: 600 }}>
+                    <span className="badge-soft badge-soft-secondary"><i className="bi bi-geo-alt me-1" /> {ev.lieu}</span>
+                    <span className="badge-soft" style={{ background: 'rgba(13,110,253,0.1)', color: '#0d6efd', border: '1px solid rgba(13,110,253,0.2)' }}><i className="bi bi-people me-1" /> {ev.scans_count || 0} Scans</span>
+                    <span className="badge-soft badge-soft-success"><i className="bi bi-check-circle me-1" /> {ev.scans_valides_count || 0} Valides</span>
+                    <span className="badge-soft badge-soft-danger"><i className="bi bi-x-circle me-1" /> {ev.scans_invalides_count || 0} Invalides</span>
+                  </div>
                 </div>
-
-                <div className="card-body" style={{ padding: 20 }}>
-                  <div style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 16 }}>
-                    <i className="bi bi-geo-alt me-2" /> {ev.lieu}
-                  </div>
-
-                  {/* Jauge de remplissage */}
-                  <div style={{ marginBottom: 20 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
-                      <span>Remplissage</span>
-                      <span style={{ color: ((ev.scans_valides_count || 0) / (ev.capacite_max_calculee || 1)) > 0.9 ? '#ef4444' : 'var(--brand-color)' }}>
-                        {ev.scans_valides_count || 0} / {ev.capacite_max_calculee || '?'}
-                      </span>
-                    </div>
-                    <div style={{ height: 8, background: isDark ? '#1e2130' : '#e2e8f0', borderRadius: 4, overflow: 'hidden' }}>
-                      <div style={{ 
-                        height: '100%', 
-                        width: `${Math.min(((ev.scans_valides_count || 0) / (ev.capacite_max_calculee || 1)) * 100, 100)}%`,
-                        background: ((ev.scans_valides_count || 0) / (ev.capacite_max_calculee || 1)) > 0.9 ? '#ef4444' : 'var(--brand-color)',
-                        transition: 'width 1s ease-in-out'
-                      }} />
-                    </div>
-                  </div>
-
-                  <h6 style={{ fontSize: 13, textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: 1, marginBottom: 12 }}>
-                    Statistiques
-                  </h6>
-                  
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 20 }}>
-                    <div style={{ padding: '10px 4px', borderRadius: 12, textAlign: 'center', background: isDark ? '#252839' : '#f8fafd', border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`, overflow: 'hidden' }}>
-                      <div style={{ color: 'var(--brand-color)', fontSize: 18, fontWeight: 800 }}>{ev.scans_count || 0}</div>
-                      <div style={{ color: 'var(--text-secondary)', fontSize: 10, fontWeight: 700, marginTop: 4, whiteSpace: 'nowrap' }}>TOTAL</div>
-                    </div>
-                    <div style={{ padding: '10px 4px', borderRadius: 12, textAlign: 'center', background: 'rgba(25,135,84,0.1)', border: '1px solid rgba(25,135,84,0.2)', overflow: 'hidden' }}>
-                      <div style={{ color: '#198754', fontSize: 18, fontWeight: 800 }}>{ev.scans_valides_count || 0}</div>
-                      <div style={{ color: '#198754', fontSize: 10, fontWeight: 700, marginTop: 4, whiteSpace: 'nowrap' }}>VALIDES</div>
-                    </div>
-                    <div style={{ padding: '10px 4px', borderRadius: 12, textAlign: 'center', background: 'rgba(220,53,69,0.1)', border: '1px solid rgba(220,53,69,0.2)', overflow: 'hidden' }}>
-                      <div style={{ color: '#dc3545', fontSize: 18, fontWeight: 800 }}>{ev.scans_invalides_count || 0}</div>
-                      <div style={{ color: '#dc3545', fontSize: 10, fontWeight: 700, marginTop: 4, whiteSpace: 'nowrap' }}>REFUSÉS</div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: 10 }}>
-                    <button onClick={() => navigate('/agent/scanner', { state: { evenementId: ev.id } })} className="btn btn-brand" style={{ flex: 1, padding: '10px 12px', fontSize: 14, fontWeight: 600, borderRadius: 10 }}>
-                      <i className="bi bi-qr-code-scan me-2" /> Scanner
-                    </button>
-                  </div>
+                
+                <div className="d-flex align-items-center gap-2 mt-3 mt-md-0">
+                  <button onClick={() => navigate('/agent/scanner', { state: { evenementId: ev.id } })} className="btn btn-brand" style={{ padding: '10px 20px', fontSize: 14, fontWeight: 600, borderRadius: 12 }}>
+                    <i className="bi bi-qr-code-scan me-2" /> Scanner
+                  </button>
                 </div>
               </div>
             ))}

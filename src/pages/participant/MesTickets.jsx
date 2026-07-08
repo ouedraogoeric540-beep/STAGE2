@@ -2,7 +2,10 @@ import { useEffect, useState } from 'react'
 import html2canvas from 'html2canvas'
 import { QRCodeSVG } from 'qrcode.react'
 import TicketExportCard from '../../components/common/TicketExportCard'
-import StatCard from '../../components/common/StatCard'
+import DashboardStatCard from '../../components/common/dashboard/DashboardStatCard'
+import DashboardCard from '../../components/common/dashboard/DashboardCard'
+import DashboardTable from '../../components/common/dashboard/DashboardTable'
+import StatusBadge from '../../components/common/dashboard/StatusBadge'
 import Layout from '../../components/common/Layout'
 import { useTheme } from '../../context/ThemeContext'
 import api, { getImageUrl } from '../../api/axios'
@@ -128,9 +131,16 @@ export default function MesTickets() {
       <div style={{ animation: 'fadeIn 0.5s ease' }}>
 
         {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))', gap: 16, marginBottom: 32 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 32 }}>
           {statCards.map((card, i) => (
-            <StatCard key={i} card={card} index={i} hasLink={true} />
+            <DashboardStatCard 
+              key={i} 
+              label={card.label} 
+              value={card.value} 
+              icon={card.icon} 
+              bg={card.color} 
+              textColor={card.textColor}
+            />
           ))}
         </div>
 
@@ -186,87 +196,77 @@ export default function MesTickets() {
             </a>
           </div>
         ) : (
-          <div style={{ overflowX: 'auto', background: isDark ? '#1e2130' : '#ffffff', border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`, borderRadius: 12 }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 14 }}>
-              <thead>
-                <tr style={{ borderBottom: `2px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`, color: 'var(--text-muted)' }}>
-                  <th style={{ padding: '16px', fontWeight: 600 }}>Événement</th>
-                  <th style={{ padding: '16px', fontWeight: 600 }}>Date</th>
-                  <th style={{ padding: '16px', fontWeight: 600 }}>Montant</th>
-                  <th style={{ padding: '16px', fontWeight: 600 }}>Statut</th>
-                  <th style={{ padding: '16px', fontWeight: 600, textAlign: 'right' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
+          <div className="d-flex flex-column gap-2">
+            <DashboardCard noPadding={true}>
+              <DashboardTable 
+                headers={['Événement', 'Lieu & Date', 'Catégorie', 'Prix', 'Statut', 'Actions']}
+                isEmpty={tickets.filter(t => filterStatut === 'tous' || t.statut === filterStatut).length === 0}
+                emptyText="Aucun ticket trouvé pour ce filtre."
+                emptyIcon="bi-ticket-detailed"
+              >
                 {(() => {
                   const filteredTickets = tickets.filter(t => filterStatut === 'tous' || t.statut === filterStatut)
                   const paginatedTickets = filteredTickets.slice((page - 1) * itemsPerPage, page * itemsPerPage)
                   return paginatedTickets.map((ticket, i) => {
-                    const cfg = statutConfig[ticket.statut] || statutConfig.expire
-
                     return (
-                      <tr
-                        key={ticket.id}
-                        style={{
-                          borderBottom: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`,
-                          transition: 'all 0.2s',
-                          cursor: 'pointer',
-                          opacity: ticket.statut === 'utilise' ? 0.65 : 1,
-                          animation: `fadeIn 0.5s ease ${i * 0.05}s both`,
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = isDark ? '#252839' : '#f8f9fa'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                        onClick={() => setSelected(ticket)}
+                      <tr key={ticket.id} 
+                          style={{ borderTop: '1px solid var(--border)', transition: 'background 0.15s', cursor: 'pointer', opacity: ticket.statut === 'utilise' ? 0.65 : 1 }}
+                          onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-surface)'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                          onClick={() => setSelected(ticket)}
                       >
-                        <td style={{ padding: '16px' }}>
-                          <div style={{ fontWeight: 800, color: 'var(--text-primary)', marginBottom: 4 }}>{ticket.evenement?.titre}</div>
-                          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}><i className="bi bi-geo-alt" style={{ marginRight: 4 }} />{ticket.evenement?.lieu}</div>
+                        <td style={{ padding: '14px 16px', fontWeight: 700, color: 'var(--text-primary)', fontSize: 14 }}>
+                          {ticket.evenement?.titre}
                         </td>
-                        <td style={{ padding: '16px', color: 'var(--text-secondary)' }}>
-                          {new Date(ticket.evenement?.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        <td style={{ padding: '14px 16px', color: 'var(--text-secondary)' }}>
+                          <div><i className="bi bi-geo-alt" /> {ticket.evenement?.lieu}</div>
+                          <div style={{ fontSize: 11, opacity: 0.8 }}><i className="bi bi-calendar-event"/> {new Date(ticket.evenement?.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
                         </td>
-                        <td style={{ padding: '16px', fontWeight: 700, color: ticket.prix_paye == 0 ? '#198754' : 'var(--text-primary)' }}>
-                          {ticket.prix_paye == 0 ? 'Gratuit' : `${Number(ticket.prix_paye).toLocaleString()} FCFA`}
-                        </td>
-                        <td style={{ padding: '16px' }}>
-                          <span style={{ padding: '6px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700, background: cfg.bg, color: cfg.color }}>
-                            {cfg.label}
+                        <td style={{ padding: '14px 16px' }}>
+                          <span style={{ display: 'inline-block', padding: '2px 8px', background: 'rgba(13,110,253,0.1)', color: '#0D6EFD', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>
+                            {ticket.categorie?.nom}
                           </span>
                         </td>
-                        <td style={{ padding: '16px', textAlign: 'right' }}>
-                          <div style={{ display: 'inline-flex', gap: 8 }}>
+                        <td style={{ padding: '14px 16px', fontWeight: 700, color: ticket.prix_paye == 0 ? 'var(--success)' : 'var(--text-primary)' }}>
+                          {ticket.prix_paye == 0 ? 'Gratuit' : `${Number(ticket.prix_paye).toLocaleString()} FCFA`}
+                        </td>
+                        <td style={{ padding: '14px 16px' }}>
+                          <StatusBadge statut={ticket.statut} />
+                        </td>
+                        <td style={{ padding: '14px 16px' }} onClick={e => e.stopPropagation()}>
+                          <div className="d-flex align-items-center gap-2">
                             <button
                               onClick={(e) => { e.stopPropagation(); setSelected(ticket) }}
-                              className="btn-action btn-action-primary"
+                              className="btn-soft btn-soft-primary px-2 py-1"
+                              style={{ fontSize: 12 }}
                             >
                               <i className="bi bi-eye" />
                             </button>
-
                             <button
                               onClick={(e) => {
                                 e.stopPropagation()
                                 telechargerPDF(ticket.id, ticket.code_unique)
                               }}
                               disabled={downloading === ticket.id || downloadingImg === ticket.id}
-                              className="btn-action btn-action-success"
+                              className="btn-soft btn-soft-success px-2 py-1"
+                              style={{ fontSize: 12 }}
                             >
                               {downloading === ticket.id
-                                ? <span style={{ width: 14, height: 14, border: '2px solid rgba(25,135,84,0.3)', borderTopColor: '#198754', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} />
+                                ? <span className="sp-spinner" style={{ width: 14, height: 14, borderTopColor: '#198754' }} />
                                 : <i className="bi bi-file-pdf" />
                               }
                             </button>
-
                             <button
                               onClick={(e) => {
                                 e.stopPropagation()
                                 telechargerImage(ticket)
                               }}
                               disabled={downloading === ticket.id || downloadingImg === ticket.id}
-                              className="btn-action"
-                              style={{ background: downloadingImg === ticket.id ? '#6c757d' : 'linear-gradient(135deg, #0D6EFD, #E83E8C)', color: '#fff' }}
+                              className="btn-soft px-2 py-1"
+                              style={{ background: downloadingImg === ticket.id ? '#6c757d' : 'linear-gradient(135deg, #0D6EFD, #E83E8C)', color: '#fff', fontSize: 12 }}
                             >
                               {downloadingImg === ticket.id
-                                ? <span style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} />
+                                ? <span className="sp-spinner" style={{ width: 14, height: 14, borderTopColor: '#fff' }} />
                                 : <i className="bi bi-image" />
                               }
                             </button>
@@ -276,8 +276,8 @@ export default function MesTickets() {
                     )
                   })
                 })()}
-              </tbody>
-            </table>
+              </DashboardTable>
+            </DashboardCard>
 
             {/* Pagination Intelligente */}
             {(() => {
@@ -303,7 +303,7 @@ export default function MesTickets() {
                   </button>
 
                   {(() => {
-                    let pages = [];
+                    let pages;
                     if (totalPages <= 7) {
                       pages = Array.from({ length: totalPages }, (_, i) => i + 1);
                     } else {
@@ -434,14 +434,7 @@ export default function MesTickets() {
 
                 {/* Status Badge */}
                 <div style={{ marginTop: 6 }}>
-                  {(() => {
-                    const cfg = statutConfig[selected.statut] || statutConfig.expire
-                    return (
-                      <span style={{ padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700, background: cfg.bg, color: cfg.color }}>
-                        {cfg.label}
-                      </span>
-                    )
-                  })()}
+                  <StatusBadge statut={selected.statut} />
                 </div>
               </div>
 

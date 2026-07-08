@@ -4,7 +4,10 @@ import { useTheme } from '../../context/ThemeContext'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../api/axios'
 import CustomSelect from '../../components/common/CustomSelect'
-import StatCard from '../../components/common/StatCard'
+import DashboardStatCard from '../../components/common/dashboard/DashboardStatCard'
+import DashboardCard from '../../components/common/dashboard/DashboardCard'
+import DashboardTable from '../../components/common/dashboard/DashboardTable'
+import StatusBadge from '../../components/common/dashboard/StatusBadge'
 import toast from 'react-hot-toast'
 import {
   AreaChart, Area, BarChart, Bar,
@@ -59,12 +62,6 @@ export default function AdminDashboard() {
     { name: 'Expirés',  value: stats.tickets_expires  || 0, color: '#DC3545' },
   ]
 
-  // Données graphique sexe
-  const sexeData = [
-    { name: 'Hommes', value: stats.participants_hommes || 0, color: '#0D6EFD' },
-    { name: 'Femmes', value: stats.participants_femmes || 0, color: '#E83E8C' },
-  ].filter((d) => d.value > 0)
-
   // Données graphique événements par mois
   const evenementsParMois = () => {
     const mois = {}
@@ -94,7 +91,6 @@ export default function AdminDashboard() {
     { label: 'Revenus total',      value: `${Number(stats.revenus_total || 0).toLocaleString()} FCFA`, icon: 'bi-cash-coin', color: '#dc3545', textColor: '#fff' },
   ]
 
-  const cardBg    = isDark ? '#1e2130' : '#ffffff'
   const borderCol = isDark ? '#2a2d3e' : '#e2e8f0'
   const textMuted = isDark ? '#9aa0b4' : '#6c757d'
   const gridCol   = isDark ? '#2a2d3e' : '#f0f0f0'
@@ -108,9 +104,11 @@ export default function AdminDashboard() {
 
   if (loading) return (
     <Layout title="Dashboard Admin">
-      <div style={{ textAlign: 'center', padding: 80 }}>
-        <div style={{ width: 48, height: 48, border: '4px solid var(--border)', borderTopColor: '#0D6EFD', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
-        <p style={{ color: 'var(--text-muted)' }}>Chargement des statistiques…</p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 400 }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ width: 48, height: 48, border: '3px solid var(--border)', borderTopColor: '#0D6EFD', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
+          <p style={{ color: 'var(--text-muted)' }}>Chargement des statistiques…</p>
+        </div>
       </div>
     </Layout>
   )
@@ -124,44 +122,38 @@ export default function AdminDashboard() {
           <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
             Bonjour, {user?.name} 👋
           </h2>
-
         </div>
 
         {/* ── Stat Cards ── */}
-        <div className="admin-stats-grid">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 32 }}>
           {statCards.map((card, i) => (
-            <StatCard key={i} card={card} index={i} hasLink={true} />
+            <DashboardStatCard 
+              key={i} 
+              label={card.label} 
+              value={card.value} 
+              icon={card.icon} 
+              bg={card.color} 
+              textColor={card.textColor}
+            />
           ))}
         </div>
 
         {/* ── Graphiques avancés ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 400px), 1fr))', gap: 20, marginBottom: 20 }}>
-          <div style={{ backgroundColor: cardBg, border: `1px solid ${borderCol}`, borderRadius: 16, padding: '16px 12px', minWidth: 0 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <i className="bi bi-cash-coin" style={{ color: '#10b981' }} />
-              Revenus des 7 derniers jours
-            </h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 400px), 1fr))', gap: 24, marginBottom: 32 }}>
+          <DashboardCard title="Revenus des 7 derniers jours" icon="bi-cash-coin" iconColor="#10b981">
             <RevenueChart data={graphStats.revenus_7j} />
-          </div>
+          </DashboardCard>
 
-          <div style={{ backgroundColor: cardBg, border: `1px solid ${borderCol}`, borderRadius: 16, padding: '16px 12px', minWidth: 0 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <i className="bi bi-qr-code-scan" style={{ color: '#3b82f6' }} />
-              Tickets Scannés (7 derniers jours)
-            </h3>
+          <DashboardCard title="Tickets Scannés (7 derniers jours)" icon="bi-qr-code-scan" iconColor="#3b82f6">
             <TicketScansChart data={graphStats.scans_7j} />
-          </div>
+          </DashboardCard>
         </div>
 
         {/* ── Graphiques ligne 1 ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: 20, marginBottom: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: 24, marginBottom: 32 }}>
 
           {/* Évolution événements */}
-          <div style={{ backgroundColor: cardBg, border: `1px solid ${borderCol}`, borderRadius: 16, padding: '16px 12px', minWidth: 0 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <i className="bi bi-graph-up" style={{ color: '#0D6EFD' }} />
-              Événements créés (6 derniers mois)
-            </h3>
+          <DashboardCard title="Événements créés (6 derniers mois)" icon="bi-graph-up" iconColor="#0D6EFD">
             {evenementsParMois().length > 0 ? (
               <ResponsiveContainer width="100%" height={200}>
                 <AreaChart data={evenementsParMois()}>
@@ -184,14 +176,10 @@ export default function AdminDashboard() {
                 Pas encore de données
               </div>
             )}
-          </div>
+          </DashboardCard>
 
           {/* Top événements par tickets */}
-          <div style={{ backgroundColor: cardBg, border: `1px solid ${borderCol}`, borderRadius: 16, padding: '16px 12px', minWidth: 0 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <i className="bi bi-trophy" style={{ color: '#FFC107' }} />
-              Top 5 événements (tickets vendus)
-            </h3>
+          <DashboardCard title="Top 5 événements (tickets vendus)" icon="bi-trophy" iconColor="#FFC107">
             {revenusData.length > 0 ? (
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={revenusData} layout="vertical">
@@ -212,18 +200,14 @@ export default function AdminDashboard() {
                 Pas encore de données
               </div>
             )}
-          </div>
+          </DashboardCard>
         </div>
 
         {/* ── Graphiques ligne 2 ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: 20, marginBottom: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: 24, marginBottom: 32 }}>
 
           {/* Répartition rôles */}
-          <div style={{ backgroundColor: cardBg, border: `1px solid ${borderCol}`, borderRadius: 16, padding: '16px 12px', minWidth: 0 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <i className="bi bi-people" style={{ color: '#E83E8C' }} />
-              Répartition des utilisateurs
-            </h3>
+          <DashboardCard title="Répartition des utilisateurs" icon="bi-people" iconColor="#E83E8C">
             {rolesData.length > 0 ? (
               <ResponsiveContainer width="100%" height={220}>
                 <PieChart>
@@ -239,9 +223,7 @@ export default function AdminDashboard() {
                     ))}
                   </Pie>
                   <Tooltip contentStyle={tooltipStyle} formatter={(v, n) => [v, n]} />
-                  <Legend
-                    formatter={(value) => <span style={{ color: isDark ? '#e8eaf0' : '#1a202c', fontSize: 12 }}>{value}</span>}
-                  />
+                  <Legend formatter={(value) => <span style={{ color: isDark ? '#e8eaf0' : '#1a202c', fontSize: 12 }}>{value}</span>} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
@@ -250,14 +232,10 @@ export default function AdminDashboard() {
                 Pas encore de données
               </div>
             )}
-          </div>
+          </DashboardCard>
 
           {/* Statut tickets */}
-          <div style={{ backgroundColor: cardBg, border: `1px solid ${borderCol}`, borderRadius: 16, padding: '16px 12px', minWidth: 0 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <i className="bi bi-ticket-perforated" style={{ color: '#198754' }} />
-              Statut des tickets
-            </h3>
+          <DashboardCard title="Statut des tickets" icon="bi-ticket-perforated" iconColor="#198754">
             {ticketsData.some((t) => t.value > 0) ? (
               <ResponsiveContainer width="100%" height={220}>
                 <PieChart>
@@ -273,9 +251,7 @@ export default function AdminDashboard() {
                     ))}
                   </Pie>
                   <Tooltip contentStyle={tooltipStyle} />
-                  <Legend
-                    formatter={(value) => <span style={{ color: isDark ? '#e8eaf0' : '#1a202c', fontSize: 12 }}>{value}</span>}
-                  />
+                  <Legend formatter={(value) => <span style={{ color: isDark ? '#e8eaf0' : '#1a202c', fontSize: 12 }}>{value}</span>} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
@@ -284,75 +260,61 @@ export default function AdminDashboard() {
                 Pas encore de tickets
               </div>
             )}
-          </div>
+          </DashboardCard>
         </div>
 
         {/* ── Derniers événements ── */}
-        <div style={{ backgroundColor: cardBg, border: `1px solid ${borderCol}`, borderRadius: 16, overflow: 'hidden' }}>
-          <div style={{ padding: '18px 24px', borderBottom: `1px solid ${borderCol}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <i className="bi bi-calendar-event" style={{ color: '#0D6EFD' }} />
-              Derniers événements
-            </h3>
+        <DashboardCard 
+          title="Derniers événements" 
+          icon="bi-calendar-event" 
+          iconColor="#0D6EFD"
+          noPadding={true}
+          headerRight={
             <CustomSelect 
               value={filtreTableau} 
               onChange={setFiltreTableau}
-              placeholder="Tous les événements"
+              placeholder="Tous"
               options={[
                 { value: 'actif', label: 'Actifs', color: '#10b981' },
                 { value: 'termine', label: 'Terminés', color: '#64748b' },
                 { value: 'annule', label: 'Annulés', color: '#ef4444' }
               ]}
-              style={{ padding: '6px 12px', minWidth: 160 }}
+              style={{ padding: '6px 12px', minWidth: 140 }}
             />
-          </div>
-          <div className="table-responsive">
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 800 }}>
-              <thead>
-                <tr style={{ borderBottom: `1px solid ${borderCol}` }}>
-                  {['Événement', 'Organisateur', 'Date', 'Tickets', 'Statut'].map((h) => (
-                    <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: textMuted, textTransform: 'uppercase', letterSpacing: 1 }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {evenements.filter(ev => filtreTableau ? ev.statut === filtreTableau : true).slice(0, 10).map((ev) => {
-                  const statutColor = { actif: '#198754', termine: '#6c757d', annule: '#DC3545' }
-                  return (
-                    <tr key={ev.id} style={{ borderBottom: `1px solid ${borderCol}` }}>
-                      <td style={{ padding: '12px 16px' }}>
-                        <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 14 }}>{ev.titre}</div>
-                        <div style={{ fontSize: 11, color: textMuted, marginTop: 2 }}>
-                          <i className="bi bi-geo-alt" style={{ marginRight: 4 }} />{ev.lieu}
-                        </div>
-                      </td>
-                      <td style={{ padding: '12px 16px', fontSize: 13, color: 'var(--text-secondary)' }}>
-                        {ev.organisateur?.name || '—'}
-                      </td>
-                      <td style={{ padding: '12px 16px', fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
-                        {new Date(ev.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
-                      </td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <span style={{ fontWeight: 700, color: '#0D6EFD', fontSize: 15 }}>{ev.tickets_count ?? 0}</span>
-                      </td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <span style={{ padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: `${statutColor[ev.statut]}20`, color: statutColor[ev.statut] }}>
-                          {ev.statut === 'termine' ? 'Terminé' : ev.statut}
-                        </span>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-            {evenements.filter(ev => filtreTableau ? ev.statut === filtreTableau : true).length === 0 && (
-              <div style={{ textAlign: 'center', padding: 40, color: textMuted }}>
-                <i className="bi bi-calendar-x" style={{ fontSize: 36, display: 'block', marginBottom: 8 }} />
-                Aucun événement trouvé
-              </div>
-            )}
-          </div>
-        </div>
+          }
+        >
+          <DashboardTable 
+            headers={['Événement', 'Date', 'Lieu', 'Organisateur', 'Tickets', 'Statut']}
+            isEmpty={evenements.filter(ev => filtreTableau ? ev.statut === filtreTableau : true).length === 0}
+            emptyText="Aucun événement trouvé"
+            emptyIcon="bi-calendar-x"
+          >
+            {evenements.filter(ev => filtreTableau ? ev.statut === filtreTableau : true).slice(0, 10).map((ev) => (
+              <tr key={ev.id} style={{ borderTop: '1px solid var(--border)', transition: 'background 0.15s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-surface)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                <td style={{ padding: '14px 16px', fontWeight: 700, color: 'var(--text-primary)', fontSize: 14 }}>
+                  {ev.titre}
+                </td>
+                <td style={{ padding: '14px 16px', color: 'var(--text-secondary)' }}>
+                  {new Date(ev.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                </td>
+                <td style={{ padding: '14px 16px', color: 'var(--text-secondary)' }}>
+                  {ev.lieu}
+                </td>
+                <td style={{ padding: '14px 16px', color: 'var(--text-secondary)' }}>
+                  {ev.organisateur?.name || '—'}
+                </td>
+                <td style={{ padding: '14px 16px', fontWeight: 600, color: '#0D6EFD' }}>
+                  {ev.tickets_count ?? 0}
+                </td>
+                <td style={{ padding: '14px 16px' }}>
+                  <StatusBadge statut={ev.statut} />
+                </td>
+              </tr>
+            ))}
+          </DashboardTable>
+        </DashboardCard>
 
       </div>
     </Layout>

@@ -18,7 +18,7 @@ export default function ForgotPassword() {
     setSuccess(false)
 
     try {
-      const res = await api.post('/forgot-password', { email })
+      await api.post('/forgot-password', { email })
       setSuccess(true)
       setEmail('')
     } catch (err) {

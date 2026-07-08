@@ -2,8 +2,12 @@ import { useEffect, useState } from 'react'
 import Layout from '../../components/common/Layout'
 import api from '../../api/axios'
 import toast from 'react-hot-toast'
+import useDebounce from '../../hooks/useDebounce'
 import { useTheme } from '../../context/ThemeContext'
 import CustomSelect from '../../components/common/CustomSelect'
+import DashboardCard from '../../components/common/dashboard/DashboardCard'
+import DashboardTable from '../../components/common/dashboard/DashboardTable'
+import StatusBadge from '../../components/common/dashboard/StatusBadge'
 
 export default function AgentHistorique() {
   const { isDark } = useTheme()
@@ -27,22 +31,14 @@ export default function AgentHistorique() {
       .finally(() => setLoading(false))
   }
 
+  const debouncedSearch = useDebounce(search, 500)
+
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      fetchHistorique(1, search, statutFilter)
-    }, 500)
-    return () => clearTimeout(delayDebounceFn)
-  }, [search, statutFilter])
+    fetchHistorique(1, debouncedSearch, statutFilter)
+  }, [debouncedSearch, statutFilter])
 
   const getStatusBadge = (statut) => {
-    switch (statut) {
-      case 'valide':
-        return <span style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981', padding: '4px 8px', borderRadius: 6, fontSize: 12, fontWeight: 700 }}><i className="bi bi-check-circle-fill me-1" /> VALIDE</span>
-      case 'deja_utilise':
-        return <span style={{ background: 'rgba(245,158,11,0.1)', color: '#f59e0b', padding: '4px 8px', borderRadius: 6, fontSize: 12, fontWeight: 700 }}><i className="bi bi-exclamation-triangle-fill me-1" /> DÉJÀ SCANNÉ</span>
-      default:
-        return <span style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', padding: '4px 8px', borderRadius: 6, fontSize: 12, fontWeight: 700 }}><i className="bi bi-x-circle-fill me-1" /> INVALIDE</span>
-    }
+    return <StatusBadge statut={statut} />
   }
 
   return (
@@ -87,67 +83,51 @@ export default function AgentHistorique() {
 
         {loading ? (
           <div style={{ textAlign: 'center', padding: 40 }}><div className="sp-spinner" style={{ margin: '0 auto' }} /></div>
-        ) : scans.length === 0 ? (
-          <div className="card text-center" style={{ padding: 40, borderStyle: 'dashed' }}>
-            <i className="bi bi-inbox" style={{ fontSize: 40, color: 'var(--text-muted)', marginBottom: 16 }} />
-            <p style={{ color: 'var(--text-muted)' }}>Aucun scan trouvé pour cette recherche.</p>
-          </div>
         ) : (
-          <div className="card" style={{ overflow: 'hidden' }}>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: 600 }}>
-                <thead>
-                  <tr style={{ background: isDark ? '#1e293b' : '#f8fafd', color: 'var(--text-muted)', fontSize: 12, textTransform: 'uppercase', letterSpacing: 1 }}>
-                    <th style={{ padding: '16px 24px', fontWeight: 700 }}>Date & Heure</th>
-                    <th style={{ padding: '16px 24px', fontWeight: 700 }}>Événement</th>
-                    <th style={{ padding: '16px 24px', fontWeight: 700 }}>Participant</th>
-                    <th style={{ padding: '16px 24px', fontWeight: 700 }}>Statut</th>
-                    <th style={{ padding: '16px 24px', width: 50 }}></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {scans.map((scan) => (
-                    <tr 
-                      key={scan.id} 
+          <div className="d-flex flex-column gap-3">
+            <DashboardCard noPadding={true}>
+              <DashboardTable 
+                headers={['Participant', 'Événement', 'Date', 'Statut', 'Actions']}
+                isEmpty={scans.length === 0}
+                emptyText="Aucun scan trouvé pour cette recherche."
+                emptyIcon="bi-inbox"
+              >
+                {scans.map((scan) => (
+                  <tr key={scan.id} 
+                      style={{ borderTop: '1px solid var(--border)', transition: 'background 0.15s', cursor: 'pointer' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-surface)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                       onClick={() => setSelectedScan(scan)}
-                      style={{ 
-                        borderBottom: `1px solid ${isDark ? '#1e293b' : '#f1f5f9'}`, 
-                        transition: 'background 0.2s',
-                        cursor: 'pointer'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'}
-                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                    >
-                      <td style={{ padding: '16px 24px', color: 'var(--text-primary)', fontSize: 14 }}>
-                        <div style={{ fontWeight: 600 }}>{new Date(scan.date_scan).toLocaleDateString()}</div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>{new Date(scan.date_scan).toLocaleTimeString()}</div>
-                      </td>
-                      <td style={{ padding: '16px 24px', color: 'var(--text-primary)', fontSize: 14 }}>
-                        {scan.evenement?.titre || 'Inconnu'}
-                      </td>
-                      <td style={{ padding: '16px 24px', color: 'var(--text-primary)', fontSize: 14 }}>
-                        <div style={{ fontWeight: 700 }}>{scan.ticket?.participant?.nom || 'Ticket Anonyme'}</div>
-                      </td>
-                      <td style={{ padding: '16px 24px' }}>
-                        {getStatusBadge(scan.resultat)}
-                      </td>
-                      <td style={{ padding: '16px 24px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                        <i className="bi bi-chevron-right" />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  >
+                    <td style={{ padding: '14px 16px', fontWeight: 700, color: 'var(--text-primary)', fontSize: 14 }}>
+                      {scan.ticket?.participant?.nom || 'Ticket Anonyme'}
+                    </td>
+                    <td style={{ padding: '14px 16px', color: 'var(--text-secondary)' }}>
+                      <i className="bi bi-calendar-event me-1" /> {scan.evenement?.titre || 'Inconnu'}
+                    </td>
+                    <td style={{ padding: '14px 16px', color: 'var(--text-secondary)' }}>
+                      {new Date(scan.date_scan).toLocaleString('fr-FR')}
+                    </td>
+                    <td style={{ padding: '14px 16px' }}>
+                      {getStatusBadge(scan.resultat)}
+                    </td>
+                    <td style={{ padding: '14px 16px' }} onClick={e => e.stopPropagation()}>
+                      <button onClick={() => setSelectedScan(scan)} className="btn-soft py-1 px-2" style={{ fontSize: 12, background: 'rgba(13,110,253,0.1)', color: '#0D6EFD', border: 'none', borderRadius: 6, fontWeight: 600 }}>
+                        Détails
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </DashboardTable>
+            </DashboardCard>
             
             {/* Pagination */}
             {totalPages > 1 && (
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 8, padding: 20, borderTop: `1px solid ${isDark ? '#1e293b' : '#f1f5f9'}` }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 8, padding: '20px 0' }}>
                 <button 
                   onClick={() => fetchHistorique(page - 1)} 
                   disabled={page === 1}
-                  className="btn" 
-                  style={{ background: isDark ? '#1e293b' : '#f8fafd', color: 'var(--text-primary)' }}
+                  className="btn-soft btn-soft-outline"
                 >
                   <i className="bi bi-chevron-left" />
                 </button>
@@ -157,8 +137,7 @@ export default function AgentHistorique() {
                 <button 
                   onClick={() => fetchHistorique(page + 1)} 
                   disabled={page === totalPages}
-                  className="btn" 
-                  style={{ background: isDark ? '#1e293b' : '#f8fafd', color: 'var(--text-primary)' }}
+                  className="btn-soft btn-soft-outline"
                 >
                   <i className="bi bi-chevron-right" />
                 </button>

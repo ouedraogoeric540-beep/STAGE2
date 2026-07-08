@@ -3,6 +3,7 @@ import ThemeToggle from './ThemeToggle'
 import NotificationBell from './NotificationBell'
 import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import Avatar from '../ui/Avatar'
 import toast from 'react-hot-toast'
 
 const roleColors = {
@@ -69,15 +70,7 @@ export default function TopNavbar({ title, onBurgerClick }) {
               cursor: 'pointer', transition: 'all 0.2s', outline: 'none'
             }}
           >
-            <div style={{
-              width: 32, height: 32, borderRadius: 8,
-              background: roleColors[user?.role] || '#3b82f6',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff', fontWeight: 700, fontSize: 14,
-              boxShadow: `0 2px 6px ${roleColors[user?.role] || '#3b82f6'}50`
-            }}>
-              {user?.name?.charAt(0).toUpperCase()}
-            </div>
+            <Avatar name={user?.name} size="sm" color={roleColors[user?.role] || '#3b82f6'} />
             <div className="d-none d-md-flex" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
               <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.2 }}>{user?.name}</span>
               <span style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'capitalize' }}>{user?.role}</span>
@@ -86,12 +79,11 @@ export default function TopNavbar({ title, onBurgerClick }) {
           </button>
 
           {open && (
-            <div style={{
+            <div className="glass-panel" style={{
               position: 'absolute', top: '100%', right: 0, marginTop: 10,
-              width: 220, backgroundColor: 'var(--bg-card)',
-              border: '1px solid var(--border)',
-              borderRadius: 12, boxShadow: 'var(--shadow-lg)',
-              padding: 8, zIndex: 1000, animation: 'slideUp 0.2s ease'
+              width: 220,
+              borderRadius: 'var(--radius-lg)',
+              padding: 8, zIndex: 1000, animation: 'slideUp 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
             }}>
               <Link
                 to="/parametres#profil"

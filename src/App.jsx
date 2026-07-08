@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import PageLoader from './components/common/PageLoader'
 import RouteLoader from './components/common/RouteLoader'
 import ScrollToTop from './components/common/ScrollToTop'
+import TopBarLoader from './components/ui/TopBarLoader'
 
 // ── Pages Publiques ──────────────────────────────────────────────
 const LandingPage = lazy(() => import('./pages/public/LandingPage'))
@@ -20,6 +21,13 @@ const CompteBloque = lazy(() => import('./pages/public/CompteBloque'))
 const ForcePasswordChange = lazy(() => import('./pages/public/ForcePasswordChange'))
 const ForgotPassword = lazy(() => import('./pages/public/ForgotPassword'))
 const ResetPassword = lazy(() => import('./pages/public/ResetPassword'))
+const Conditions    = lazy(() => import('./pages/public/Conditions'))
+const Confidentialite = lazy(() => import('./pages/public/Confidentialite'))
+const Cookies       = lazy(() => import('./pages/public/Cookies'))
+const Remboursement = lazy(() => import('./pages/public/Remboursement'))
+const APropos       = lazy(() => import('./pages/public/APropos'))
+const FAQ           = lazy(() => import('./pages/public/FAQ'))
+const Contact       = lazy(() => import('./pages/public/Contact'))
 
 // ── Admin ────────────────────────────────────────────────────────
 const AdminDashboard   = lazy(() => import('./pages/admin/Dashboard'))
@@ -27,6 +35,7 @@ const AdminUsers       = lazy(() => import('./pages/admin/Users'))
 const AdminEvenements  = lazy(() => import('./pages/admin/Evenements'))
 const AdminLogs        = lazy(() => import('./pages/admin/Logs'))
 const VerifySecondPassword = lazy(() => import('./pages/admin/VerifySecondPassword'))
+const AdminFinances    = lazy(() => import('./pages/admin/Finances'))
 const AdminContacts    = lazy(() => import('./pages/admin/Contacts'))
 
 // ── Shared ───────────────────────────────────────────────────────
@@ -37,6 +46,7 @@ const OrgDashboard  = lazy(() => import('./pages/organisateur/Dashboard'))
 const OrgEvenements = lazy(() => import('./pages/organisateur/Evenements'))
 const OrgAgents     = lazy(() => import('./pages/organisateur/Agents'))
 const OrgScans      = lazy(() => import('./pages/organisateur/Scans'))
+const OrgFinances   = lazy(() => import('./pages/organisateur/Finances'))
 
 // ── Agent ────────────────────────────────────────────────────────
 const AgentDashboard = lazy(() => import('./pages/agent/Dashboard'))
@@ -80,6 +90,7 @@ export default function App() {
       <AuthProvider>
         <BrowserRouter>
           <ScrollToTop />
+          <TopBarLoader />
           <Toaster position="top-right" />
           <Suspense fallback={<PageLoader />}>
             <RouteLoader />
@@ -99,6 +110,13 @@ export default function App() {
               } />
               <Route path="/evenements/:id"      element={<EventDetail />} />
               <Route path="/reservation/:id"     element={<Reservation />} />
+              <Route path="/conditions"          element={<Conditions />} />
+              <Route path="/confidentialite"     element={<Confidentialite />} />
+              <Route path="/cookies"             element={<Cookies />} />
+              <Route path="/remboursement"       element={<Remboursement />} />
+              <Route path="/a-propos"            element={<APropos />} />
+              <Route path="/faq"                 element={<FAQ />} />
+              <Route path="/contact"             element={<Contact />} />
 
               {/* Admin */}
               <Route path="/admin" element={
@@ -109,6 +127,7 @@ export default function App() {
               <Route path="/admin/users" element={<PrivateRoute roles={['admin']}><AdminUsers /></PrivateRoute>} />
               <Route path="/admin/contacts" element={<PrivateRoute roles={['admin']}><AdminContacts /></PrivateRoute>} />
               <Route path="/admin/evenements" element={<PrivateRoute roles={['admin']}><AdminEvenements /></PrivateRoute>} />
+              <Route path="/admin/finances" element={<PrivateRoute roles={['admin']}><AdminFinances /></PrivateRoute>} />
               <Route path="/admin/logs" element={<PrivateRoute roles={['admin']}><AdminLogs /></PrivateRoute>} />
               <Route path="/admin/evenements-actifs" element={
                 <PrivateRoute roles={['admin']}>
@@ -140,6 +159,11 @@ export default function App() {
               <Route path="/organisateur/scans" element={
                 <PrivateRoute roles={['organisateur']}>
                   <OrgScans />
+                </PrivateRoute>
+              }/>
+              <Route path="/organisateur/finances" element={
+                <PrivateRoute roles={['organisateur']}>
+                  <OrgFinances />
                 </PrivateRoute>
               }/>
               <Route path="/organisateur/evenements-actifs" element={

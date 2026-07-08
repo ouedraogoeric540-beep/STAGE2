@@ -5,11 +5,15 @@ import { useTheme } from '../../context/ThemeContext'
 import ConfirmModal from '../../components/common/ConfirmModal'
 import FormulaireEvenement from '../../components/common/FormulaireEvenement'
 import ActionMenu from '../../components/common/ActionMenu'
-import DataTable from '../../components/common/DataTable'
+import DashboardCard from '../../components/common/dashboard/DashboardCard'
+import DashboardTable from '../../components/common/dashboard/DashboardTable'
+import StatusBadge from '../../components/common/dashboard/StatusBadge'
+import Modal from '../../components/ui/Modal'
+import Button from '../../components/ui/Button'
+import Alert from '../../components/ui/Alert'
+
 import api from '../../api/axios'
 import toast from 'react-hot-toast'
-
-const statutColor = { en_attente: '#f59e0b', actif: '#198754', termine: '#6c757d', annule: '#DC3545', rejete: '#ef4444' }
 
 const formVide = {
   titre: '', type: 'autre', description: '', date: '', is_multijour: false, dates_multiples: [], lieu: '',
@@ -95,7 +99,7 @@ export default function OrgEvenements() {
       link.click();
       link.parentNode.removeChild(link);
       toast.success('Export réussi', { id: 'export' });
-    } catch (err) {
+    } catch {
       toast.error('Erreur lors de l\'export', { id: 'export' });
     }
   }
@@ -147,64 +151,68 @@ export default function OrgEvenements() {
     <Layout title="Mes Événements">
       <div style={{ animation: 'fadeIn 0.5s ease' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)' }}>Mes Événements</h2>
-          <button onClick={ouvrirCreer} style={{ padding: '10px 20px', background: 'var(--primary)', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 700, cursor: 'pointer' }}>
-            + Créer un événement
-          </button>
+          <h2 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>Mes Événements</h2>
+          <Button onClick={ouvrirCreer} variant="primary" icon="bi-plus-circle">
+            Créer un événement
+          </Button>
         </div>
 
-        {/* ── Tableau des événements en ligne ── */}
-        {/* ── Tableau ── */}
-        <DataTable
-          loading={loading}
-          data={evenements.filter(ev => statusFilter ? ev.statut === statusFilter : true)}
-          onRowClick={(ev) => setDetailsEvent(ev)}
-          columns={[
-            {
-              header: 'Événement',
-              accessor: 'titre',
-              cellStyle: { fontWeight: 600, minWidth: 120 }
-            },
-            {
-              header: 'Date',
-              render: (ev) => <span style={{ whiteSpace: 'nowrap' }}>{new Date(ev.date).toLocaleDateString()}</span>
-            },
-            {
-              header: 'Revenus',
-              render: (ev) => {
-                const rev = ev.categories?.reduce((cs, c) => cs + (c.quantite_vendue * c.prix), 0) || 0
-                return <span style={{ color: '#10b981', fontWeight: 700, whiteSpace: 'nowrap' }}>{Number(rev).toLocaleString()} FCFA</span>
-              }
-            },
-            {
-              header: 'Statut',
-              headerStyle: { display: 'table-cell' }, // Can be hidden on mobile via CSS class in custom cell, but easier to just show it or add class
-              render: (ev) => (
-                <span className="d-none d-md-inline-block" style={{ padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: `${statutColor[ev.statut]}20`, color: statutColor[ev.statut] }}>
-                  {ev.statut === 'en_attente' ? 'En attente' : ev.statut === 'rejete' ? 'Rejeté' : ev.statut}
-                </span>
+        {/* ── Tableau des événements ── */}
+        <DashboardCard noPadding={true}>
+          <DashboardTable 
+            headers={['Événement', 'Date & Lieu', 'Revenus', 'Statut', 'Actions']}
+            isEmpty={!loading && evenements.filter(ev => statusFilter ? ev.statut === statusFilter : true).length === 0}
+            emptyText="Aucun événement trouvé"
+            emptyIcon="bi-calendar-x"
+          >
+            {loading ? (
+              <tr>
+                <td colSpan="5" style={{ textAlign: 'center', padding: '40px 0' }}>
+                  <span className="spinner-border text-primary" />
+                </td>
+              </tr>
+            ) : evenements.filter(ev => statusFilter ? ev.statut === statusFilter : true).map((ev) => {
+              const rev = ev.categories?.reduce((cs, c) => cs + (c.quantite_vendue * c.prix), 0) || 0
+              return (
+                <tr key={ev.id} 
+                    style={{ borderTop: '1px solid var(--border)', transition: 'var(--transition-fast)', cursor: 'pointer' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-surface)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    onClick={() => setDetailsEvent(ev)}
+                >
+                  <td style={{ padding: '16px 20px', fontWeight: 700, color: 'var(--text-primary)', fontSize: 14 }}>
+                    {ev.titre}
+                  </td>
+                  <td style={{ padding: '16px 20px', color: 'var(--text-secondary)' }}>
+                    <div><i className="bi bi-calendar3"/> {new Date(ev.date).toLocaleDateString()}</div>
+                    <div style={{ fontSize: 11, opacity: 0.8 }}><i className="bi bi-geo-alt" /> {ev.lieu}</div>
+                  </td>
+                  <td style={{ padding: '16px 20px', fontWeight: 700, color: 'var(--success)' }}>
+                    {Number(rev).toLocaleString()} FCFA
+                  </td>
+                  <td style={{ padding: '16px 20px' }}>
+                    <StatusBadge statut={ev.statut} />
+                  </td>
+                  <td style={{ padding: '16px 20px' }} onClick={e => e.stopPropagation()}>
+                    <div className="d-flex align-items-center gap-2">
+                      <Button onClick={() => setDetailsEvent(ev)} variant="soft" size="sm">
+                        Détails
+                      </Button>
+                      <Button onClick={() => ouvrirEditer(ev)} variant="outline" size="sm" icon="bi-pencil" disabled={ev.statut !== 'actif' && ev.statut !== 'en_attente'} />
+                      <ActionMenu
+                        options={[
+                          { label: 'Exporter (CSV)', icon: 'bi-file-earmark-excel-fill', color: 'var(--success)', onClick: () => exporterCSV(ev.id) },
+                          { divider: true },
+                          { label: 'Supprimer', icon: 'bi-trash-fill', color: 'var(--danger)', onClick: () => demanderSuppression(ev) }
+                        ]}
+                      />
+                    </div>
+                  </td>
+                </tr>
               )
-            },
-            {
-              header: 'Actions',
-              align: 'right',
-              render: (ev) => (
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }} onClick={(e) => e.stopPropagation()}>
-                  <ActionMenu
-                    options={[
-                      { label: 'Voir Détails', icon: 'bi-eye-fill', color: '#8b5cf6', onClick: () => setDetailsEvent(ev) },
-                      { label: 'Exporter (CSV)', icon: 'bi-file-earmark-excel-fill', color: '#10b981', onClick: () => exporterCSV(ev.id) },
-                      { divider: true },
-                      { label: 'Modifier', icon: 'bi-pencil-fill', color: '#3b82f6', disabled: ev.statut !== 'actif' && ev.statut !== 'en_attente', onClick: () => ouvrirEditer(ev) },
-                      { label: 'Supprimer', icon: 'bi-trash-fill', color: '#ef4444', onClick: () => demanderSuppression(ev) }
-                    ]}
-                  />
-                </div>
-              )
-            }
-          ]}
-          emptyMessage="Aucun événement trouvé"
-        />
+            })}
+          </DashboardTable>
+        </DashboardCard>
       </div>
 
       {/* ── Modal suppression personnalisée ── */}
@@ -219,7 +227,7 @@ export default function OrgEvenements() {
         isDanger={true}
       >
         {deleteEvent && (
-          <div style={{ background: isDark ? '#1e2334' : '#f8fafc', borderRadius: 12, padding: 16, border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}` }}>
+          <div style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', padding: 16, border: `1px solid var(--border)` }}>
             <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>Événement</div>
             <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{deleteEvent.titre}</div>
             <div style={{ marginTop: 8, display: 'grid', gap: 4, color: 'var(--text-secondary)', fontSize: 13 }}>
@@ -230,31 +238,18 @@ export default function OrgEvenements() {
         )}
       </ConfirmModal>
 
-
       {/* ── Modal Détails de l'événement ── */}
-      {detailsEvent && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
-          zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
-        }}>
-          <div style={{
-            backgroundColor: isDark ? '#1e2130' : '#fff', borderRadius: 20, padding: 24,
-            width: '100%', maxWidth: 500, border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`,
-            boxShadow: '0 20px 40px rgba(0,0,0,0.3)', animation: 'fadeIn 0.3s ease',
-            maxHeight: '90vh', overflowY: 'auto'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <h3 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                <i className="bi bi-info-circle-fill me-2" style={{ color: 'var(--brand-color)' }} />
-                Informations de l'événement
-              </h3>
-              <button onClick={() => setDetailsEvent(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 24 }}>
-                <i className="bi bi-x" />
-              </button>
-            </div>
-
-            <div style={{ background: isDark ? '#141827' : '#f8fafc', borderRadius: 16, padding: 20, marginBottom: 20 }}>
-              <h4 style={{ color: 'var(--text-primary)', fontWeight: 800, fontSize: 18, marginBottom: 8 }}>{detailsEvent.titre}</h4>
+      <Modal
+        isOpen={!!detailsEvent}
+        onClose={() => setDetailsEvent(null)}
+        title="Informations de l'événement"
+        size="md"
+        footer={<Button variant="primary" onClick={() => setDetailsEvent(null)}>Fermer</Button>}
+      >
+        {detailsEvent && (
+          <>
+            <div style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-lg)', padding: '24px', marginBottom: 20 }}>
+              <h4 style={{ color: 'var(--text-primary)', fontWeight: 800, fontSize: 18, marginBottom: 8, fontFamily: 'var(--font-heading)' }}>{detailsEvent.titre}</h4>
               <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 16 }}>{detailsEvent.description || "Aucune description fournie."}</p>
 
               <div className="row g-3">
@@ -272,9 +267,7 @@ export default function OrgEvenements() {
                 </div>
                 <div className="col-6">
                   <small style={{ color: 'var(--text-muted)', display: 'block', fontSize: 12 }}>Statut</small>
-                  <span style={{ padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 700, background: `${statutColor[detailsEvent.statut]}20`, color: statutColor[detailsEvent.statut] }}>
-                    {detailsEvent.statut === 'en_attente' ? 'En attente' : detailsEvent.statut === 'rejete' ? 'Rejeté' : detailsEvent.statut}
-                  </span>
+                  <StatusBadge statut={detailsEvent.statut} />
                 </div>
               </div>
             </div>
@@ -283,14 +276,14 @@ export default function OrgEvenements() {
             {detailsEvent.categories?.length > 0 ? (
               <div style={{ display: 'grid', gap: 10 }}>
                 {detailsEvent.categories.map((c) => (
-                  <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: isDark ? '#252839' : '#fff', border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`, borderRadius: 12 }}>
+                  <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: 'var(--bg-card)', border: `1px solid var(--border)`, borderRadius: 'var(--radius-md)' }}>
                     <div>
                       <strong style={{ color: 'var(--text-primary)', display: 'block' }}>{c.nom}</strong>
                       <span style={{ fontSize: 13, color: 'var(--brand-color)', fontWeight: 600 }}>{Number(c.prix).toLocaleString()} FCFA</span>
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Vendus : <strong style={{ color: 'var(--text-primary)' }}>{c.quantite_vendue}</strong> / {c.quantite_total <= 0 ? 'Illimité' : c.quantite_total}</div>
-                      <div style={{ fontSize: 12, color: '#10b981', fontWeight: 700, marginTop: 4 }}>Revenus : {(c.quantite_vendue * c.prix).toLocaleString()} FCFA</div>
+                      <div style={{ fontSize: 12, color: 'var(--success)', fontWeight: 700, marginTop: 4 }}>Revenus : {(c.quantite_vendue * c.prix).toLocaleString()} FCFA</div>
                     </div>
                   </div>
                 ))}
@@ -298,63 +291,36 @@ export default function OrgEvenements() {
             ) : (
               <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>Aucune catégorie.</p>
             )}
+          </>
+        )}
+      </Modal>
 
-            <div style={{ marginTop: 24, textAlign: 'right' }}>
-              <button className="btn btn-brand" onClick={() => setDetailsEvent(null)}>Fermer</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* ── Modal (Création / Modification) ── */}
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title={editing ? 'Modifier l\'événement' : 'Créer un événement'}
+        size="md"
+        glass={false}
+      >
+        {!editing && (
+          <Alert variant="warning" icon="bi-info-circle-fill" style={{ marginBottom: 20 }}>
+            Votre événement sera placé "En attente" et devra être validé par un administrateur avant de devenir public.
+          </Alert>
+        )}
 
-      {/* ── Modal (Correction de l'affichage) ── */}
-      {showModal && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
-          zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '20px'
-        }}>
-          <div style={{
-            backgroundColor: isDark ? '#1e2130' : '#fff',
-            borderRadius: 20,
-            padding: 32,
-            width: '100%',
-            maxWidth: 580,
-            maxHeight: '90vh', // Limite la hauteur à 90% de l'écran
-            overflowY: 'auto', // Active le scroll si le contenu est trop grand
-            border: `1px solid ${isDark ? '#2a2d3e' : '#e2e8f0'}`,
-            boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-              <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-                <i className="bi bi-calendar-plus" style={{ marginRight: 8, color: '#0D6EFD' }} />
-                {editing ? 'Modifier l\'événement' : 'Créer un événement'}
-              </h3>
-              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 20 }}>
-                <i className="bi bi-x-lg" />
-              </button>
-            </div>
-
-            {!editing && (
-              <div style={{ marginBottom: 20, padding: 12, background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', borderRadius: 8, fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <i className="bi bi-info-circle-fill" style={{ fontSize: 16 }}></i>
-                Votre événement sera placé "En attente" et devra être validé par un administrateur avant de devenir public.
-              </div>
-            )}
-
-            <FormulaireEvenement
-              form={form}
-              setForm={setForm}
-              onSubmit={sauvegarder}
-              saving={saving}
-              editing={editing}
-              onClose={() => setShowModal(false)}
-              isDark={isDark}
-              errors={errors}
-              setErrors={setErrors}
-            />
-          </div>
-        </div>
-      )}
+        <FormulaireEvenement
+          form={form}
+          setForm={setForm}
+          onSubmit={sauvegarder}
+          saving={saving}
+          editing={editing}
+          onClose={() => setShowModal(false)}
+          isDark={isDark}
+          errors={errors}
+          setErrors={setErrors}
+        />
+      </Modal>
     </Layout>
   )
 }
