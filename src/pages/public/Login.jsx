@@ -71,9 +71,7 @@ export default function Login() {
       padding: '24px',
       position: 'relative',
       overflow: 'hidden',
-      background: isDark 
-        ? 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)'
-        : 'linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%)'
+      background: 'var(--bg-body)'
     }}>
       {/* Formes géométriques d'arrière-plan */}
       <div style={{
@@ -85,25 +83,25 @@ export default function Login() {
         background: 'var(--brand-glow)', borderRadius: '50%', filter: 'blur(100px)', opacity: 0.6, pointerEvents: 'none'
       }} />
 
-      <div style={{ width: '100%', maxWidth: 400, animation: 'fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1)', position: 'relative', zIndex: 10 }}>
-        <div className="glass-panel" style={{ padding: '32px', borderRadius: 'var(--radius-xl)' }}>
+      <div style={{ width: '100%', maxWidth: 360, animation: 'fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1)', position: 'relative', zIndex: 10 }}>
+        <div className="glass-panel" style={{ padding: '20px', borderRadius: 'var(--radius-xl)' }}>
           
           <div style={{ position: 'absolute', top: 24, right: 24 }}>
             <ThemeToggle />
           </div>
 
-          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '16px' }}>
             <Logo size="md" showTagline />
           </div>
 
-          <h2 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', textAlign: 'center', marginBottom: '8px', fontFamily: 'var(--font-heading)' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', textAlign: 'center', marginBottom: '4px', fontFamily: 'var(--font-heading)' }}>
             Bon retour !
           </h2>
-          <p style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '32px' }}>
+          <p style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '16px' }}>
             Connectez-vous pour accéder à votre espace SecurePass
           </p>
 
-          <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             
             <Input
               label="Identifiant ou Email"
@@ -128,13 +126,13 @@ export default function Login() {
                 onChange={handle}
                 error={getError('password')}
                 required
-                style={{ paddingRight: '46px' }}
+                style={{ paddingRight: '40px' }}
               />
               <button
                 type="button"
                 onClick={() => setShowPwd(!showPwd)}
                 style={{
-                  position: 'absolute', right: '12px', top: getError('password') ? '38px' : '44px',
+                  position: 'absolute', right: '12px', top: getError('password') ? '28px' : '32px',
                   background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer',
                   padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}
@@ -160,7 +158,7 @@ export default function Login() {
               fullWidth
               loading={loading}
               icon="bi-box-arrow-in-right"
-              style={{ marginTop: '8px', padding: '14px', fontSize: '15px' }}
+              style={{ marginTop: '4px', padding: '10px', fontSize: '14px' }}
             >
               Se connecter
             </Button>
@@ -173,7 +171,7 @@ export default function Login() {
             </Link>
           </div>
 
-          <div style={{ textAlign: 'center', marginTop: '16px' }}>
+          <div style={{ textAlign: 'center', marginTop: '12px' }}>
             <Link to="/" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
               <i className="bi bi-arrow-left" /> Retour à l'accueil
             </Link>

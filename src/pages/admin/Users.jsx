@@ -40,7 +40,7 @@ export default function AdminUsers() {
     if (showLoading) setLoading(true)
     Promise.all([
       api.get('/admin/users', { params: role ? { role } : {} }),
-      api.get('/admin/evenements')
+      api.get('/admin/evenements?all=true')
     ])
       .then(([u, e]) => {
         setUsers(u.data)

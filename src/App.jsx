@@ -37,6 +37,7 @@ const AdminLogs        = lazy(() => import('./pages/admin/Logs'))
 const VerifySecondPassword = lazy(() => import('./pages/admin/VerifySecondPassword'))
 const AdminFinances    = lazy(() => import('./pages/admin/Finances'))
 const AdminContacts    = lazy(() => import('./pages/admin/Contacts'))
+const PlatformWallet   = lazy(() => import('./pages/admin/PlatformWallet'))
 
 // ── Shared ───────────────────────────────────────────────────────
 const EvenementsActifs = lazy(() => import('./pages/shared/EvenementsActifs'))
@@ -128,6 +129,7 @@ export default function App() {
               <Route path="/admin/contacts" element={<PrivateRoute roles={['admin']}><AdminContacts /></PrivateRoute>} />
               <Route path="/admin/evenements" element={<PrivateRoute roles={['admin']}><AdminEvenements /></PrivateRoute>} />
               <Route path="/admin/finances" element={<PrivateRoute roles={['admin']}><AdminFinances /></PrivateRoute>} />
+              <Route path="/admin/platform-wallet" element={<PrivateRoute roles={['admin']}><PlatformWallet /></PrivateRoute>} />
               <Route path="/admin/logs" element={<PrivateRoute roles={['admin']}><AdminLogs /></PrivateRoute>} />
               <Route path="/admin/evenements-actifs" element={
                 <PrivateRoute roles={['admin']}>

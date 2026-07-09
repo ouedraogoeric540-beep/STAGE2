@@ -324,7 +324,7 @@ export default function OrgFinances() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
           onClick={() => setShowModal(false)}>
           <div onClick={e => e.stopPropagation()}
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 20, padding: 32, width: '100%', maxWidth: 480, animation: 'slideUp 0.3s ease', maxHeight: '90vh', overflowY: 'auto' }}>
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 20, padding: 24, width: '100%', maxWidth: 500, animation: 'slideUp 0.3s ease', maxHeight: '95vh', overflowY: 'auto', margin: '16px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: 'var(--text-primary)' }}>Demander un retrait</h3>
@@ -371,28 +371,30 @@ export default function OrgFinances() {
                   placeholder={selectedEv ? `Max : ${Math.floor(selectedEv.solde_disponible)} FCFA` : 'Montant'} />
               </div>
 
-              {/* Opérateur */}
-              <div style={{ marginBottom: 16 }}>
-                <label style={labelStyle}>Opérateur Mobile Money <span style={{ color: '#ef4444' }}>*</span></label>
-                <select name="operateur" value={form.operateur} onChange={handleForm} style={inputStyle} required>
-                  <option value="">— Sélectionner un opérateur —</option>
-                  {OPERATEURS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                </select>
-              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 16 }}>
+                {/* Opérateur */}
+                <div>
+                  <label style={labelStyle}>Opérateur Mobile Money <span style={{ color: '#ef4444' }}>*</span></label>
+                  <select name="operateur" value={form.operateur} onChange={handleForm} style={inputStyle} required>
+                    <option value="">— Sélectionner —</option>
+                    {OPERATEURS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </div>
 
-              {/* Numéro */}
-              <div style={{ marginBottom: 16 }}>
-                <label style={labelStyle}>Numéro Mobile Money <span style={{ color: '#ef4444' }}>*</span></label>
-                <input type="text" name="numero_mobile_money" value={form.numero_mobile_money} onChange={handleForm}
-                  placeholder="Ex: +22670000000" required style={inputStyle} />
+                {/* Numéro */}
+                <div>
+                  <label style={labelStyle}>Numéro Mobile Money <span style={{ color: '#ef4444' }}>*</span></label>
+                  <input type="text" name="numero_mobile_money" value={form.numero_mobile_money} onChange={handleForm}
+                    placeholder="Ex: +22670000000" required style={inputStyle} />
+                </div>
               </div>
 
               {/* Commentaire */}
-              <div style={{ marginBottom: 24 }}>
+              <div style={{ marginBottom: 20 }}>
                 <label style={labelStyle}>Commentaire (facultatif)</label>
                 <textarea name="commentaire" value={form.commentaire} onChange={handleForm}
-                  placeholder="Informations complémentaires…" rows={3}
-                  style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.5 }} />
+                  placeholder="Informations complémentaires…" rows={2}
+                  style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.5, minHeight: 60 }} />
               </div>
 
               <div style={{ display: 'flex', gap: 12 }}>

@@ -17,9 +17,9 @@ const Input = forwardRef(({
     border: `1px solid ${error ? 'var(--danger)' : 'var(--border)'}`,
     borderRadius: 'var(--radius-md)',
     color: 'var(--text-primary)',
-    padding: `12px 16px`,
-    paddingLeft: icon && iconPosition === 'left' ? '46px' : '16px',
-    paddingRight: icon && iconPosition === 'right' ? '46px' : '16px',
+    padding: `8px 12px`,
+    paddingLeft: icon && iconPosition === 'left' ? '36px' : '12px',
+    paddingRight: icon && iconPosition === 'right' ? '36px' : '12px',
     fontSize: '14px',
     fontFamily: 'var(--font-body)',
     transition: 'var(--transition-fast)',
@@ -28,17 +28,18 @@ const Input = forwardRef(({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: fullWidth ? '100%' : 'auto', ...containerStyle }} className={className}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: fullWidth ? '100%' : 'auto', ...containerStyle }} className={className}>
       {label && <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>{label}</label>}
       
       <div style={{ position: 'relative', width: '100%' }}>
         {icon && iconPosition === 'left' && (
-          <i className={`bi ${icon}`} style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: error ? 'var(--danger)' : 'var(--text-muted)' }} />
+          <i className={`bi ${icon}`} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: error ? 'var(--danger)' : 'var(--text-muted)' }} />
         )}
         
         <input
           ref={ref}
-          style={baseStyle}
+          {...props}
+          style={{ ...baseStyle, ...(props.style || {}) }}
           onFocus={(e) => {
             e.currentTarget.style.borderColor = error ? 'var(--danger)' : 'var(--brand-color)'
             e.currentTarget.style.boxShadow = `0 0 0 4px ${error ? 'rgba(239, 68, 68, 0.15)' : 'var(--brand-glow)'}`
@@ -49,11 +50,10 @@ const Input = forwardRef(({
             e.currentTarget.style.boxShadow = 'inset 0 2px 4px rgba(0, 0, 0, 0.01)'
             e.currentTarget.style.backgroundColor = 'var(--bg-input)'
           }}
-          {...props}
         />
         
         {icon && iconPosition === 'right' && (
-          <i className={`bi ${icon}`} style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', color: error ? 'var(--danger)' : 'var(--text-muted)' }} />
+          <i className={`bi ${icon}`} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: error ? 'var(--danger)' : 'var(--text-muted)' }} />
         )}
       </div>
 

@@ -68,9 +68,15 @@ export default function AdminEvenements() {
     if (showLoading) setLoading(true)
     api.get(`/admin/evenements?page=${page}`)
       .then((r) => {
-        setEvenements(r.data.data)
-        setCurrentPage(r.data.current_page)
-        setLastPage(r.data.last_page)
+        if (r.data && r.data.data) {
+          setEvenements(r.data.data)
+          setCurrentPage(r.data.current_page || 1)
+          setLastPage(r.data.last_page || 1)
+        } else {
+          setEvenements(Array.isArray(r.data) ? r.data : [])
+          setCurrentPage(1)
+          setLastPage(1)
+        }
       })
       .catch(() => toast.error('Erreur chargement'))
       .finally(() => setLoading(false))

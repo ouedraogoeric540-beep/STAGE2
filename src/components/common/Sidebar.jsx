@@ -25,7 +25,8 @@ const navByRole = {
       ]
     },
     { to: '/admin/mes-tickets', icon: 'bi-ticket-perforated', label: 'Mes Tickets' },
-    { to: '/admin/finances', icon: 'bi-cash-coin', label: 'Finances' },
+    { to: '/admin/finances', icon: 'bi-cash-coin', label: 'Finances (Organisateurs)' },
+    { to: '/admin/platform-wallet', icon: 'bi-safe2-fill', label: 'Portefeuille SecurePass' },
     { to: '/admin/logs',       icon: 'bi-terminal-fill',     label: 'Logs Système'   },
   ],
   organisateur: [

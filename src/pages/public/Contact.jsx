@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import Layout from '../../components/common/Layout'
+import PublicNavbar from '../../components/public/PublicNavbar'
+import Footer from '../../components/common/Footer'
 import api from '../../api/axios'
 import toast from 'react-hot-toast'
 
@@ -22,8 +23,10 @@ export default function Contact() {
   }
 
   return (
-    <Layout title="Contactez-nous">
-      <div className="container py-5">
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: 'var(--bg-body)' }}>
+      <PublicNavbar />
+      <div style={{ flex: 1, padding: '60px 0' }}>
+        <div className="container">
         <div className="row justify-content-center">
           <div className="col-12 col-md-8 col-lg-6">
             <div className="card shadow-sm border-0" style={{ borderRadius: '16px' }}>
@@ -83,7 +86,9 @@ export default function Contact() {
             </div>
           </div>
         </div>
+        </div>
       </div>
-    </Layout>
+      <Footer />
+    </div>
   )
 }

@@ -91,9 +91,7 @@ export default function Register() {
       padding: '24px',
       position: 'relative',
       overflow: 'hidden',
-      background: isDark 
-        ? 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)'
-        : 'linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%)'
+      background: 'var(--bg-body)'
     }}>
       {/* Formes géométriques d'arrière-plan */}
       <div style={{
@@ -107,16 +105,16 @@ export default function Register() {
 
       <div style={{
         position: 'relative',
-        width: '100%', maxWidth: 500,
+        width: '100%', maxWidth: 420,
         zIndex: 10,
         animation: 'fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
       }}>
-        <div className="glass-panel" style={{ padding: '32px', borderRadius: 'var(--radius-xl)' }}>
+        <div className="glass-panel" style={{ padding: '20px', borderRadius: 'var(--radius-xl)' }}>
           <div style={{ position: 'absolute', top: 24, right: 24 }}>
             <ThemeToggle />
           </div>
           
-          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '12px' }}>
             <Logo size="sm" showTagline />
           </div>
 
@@ -125,17 +123,17 @@ export default function Register() {
               <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', textAlign: 'center', marginBottom: '4px', fontFamily: 'var(--font-heading)' }}>
                 Créer mon compte
               </h2>
-              <p style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '24px' }}>
+              <p style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '12px' }}>
                 Inscrivez-vous pour accéder à vos tickets ou gérer vos événements
               </p>
 
               {/* Tabs */}
-              <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '12px' }}>
                 <button 
                   type="button"
                   onClick={() => setActiveTab('participant')}
                   style={{ 
-                    flex: 1, padding: '12px', background: 'none', border: 'none', 
+                    flex: 1, padding: '8px', background: 'none', border: 'none', 
                     borderBottom: activeTab === 'participant' ? '2px solid var(--brand-color)' : '2px solid transparent', 
                     color: activeTab === 'participant' ? 'var(--brand-color)' : 'var(--text-muted)', 
                     fontWeight: activeTab === 'participant' ? 700 : 500, cursor: 'pointer', transition: 'var(--transition-fast)' 
@@ -147,7 +145,7 @@ export default function Register() {
                   type="button"
                   onClick={() => setActiveTab('organisateur')}
                   style={{ 
-                    flex: 1, padding: '12px', background: 'none', border: 'none', 
+                    flex: 1, padding: '8px', background: 'none', border: 'none', 
                     borderBottom: activeTab === 'organisateur' ? '2px solid var(--brand-color)' : '2px solid transparent', 
                     color: activeTab === 'organisateur' ? 'var(--brand-color)' : 'var(--text-muted)', 
                     fontWeight: activeTab === 'organisateur' ? 700 : 500, cursor: 'pointer', transition: 'var(--transition-fast)' 
@@ -157,8 +155,8 @@ export default function Register() {
                 </button>
               </div>
 
-              <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+              <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   <Input
                     label="Nom *"
                     name="name"
@@ -185,7 +183,7 @@ export default function Register() {
                 </div>
 
                 {activeTab === 'participant' && (
-                  <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     <Select
                       label="Sexe"
                       name="sexe"
@@ -236,8 +234,8 @@ export default function Register() {
                 )}
 
                 {activeTab === 'participant' && (
-                  <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-                    <div style={{ position: 'relative', flex: '1 1 calc(50% - 8px)', minWidth: 150 }}>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <div style={{ position: 'relative', flex: '1 1 calc(50% - 6px)', minWidth: 150 }}>
                       <Input
                         label="Mot de passe *"
                         name="password"
@@ -250,12 +248,12 @@ export default function Register() {
                         required
                         style={{ paddingRight: '40px' }}
                       />
-                      <button type="button" onClick={() => setShowPwd(!showPwd)} style={{ position: 'absolute', right: '12px', top: getError('password') ? '38px' : '44px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 0 }}>
+                      <button type="button" onClick={() => setShowPwd(!showPwd)} style={{ position: 'absolute', right: '12px', top: getError('password') ? '28px' : '32px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 0 }}>
                         <i className={`bi ${showPwd ? 'bi-eye-slash' : 'bi-eye'}`} />
                       </button>
                     </div>
 
-                    <div style={{ position: 'relative', flex: '1 1 calc(50% - 8px)', minWidth: 150 }}>
+                    <div style={{ position: 'relative', flex: '1 1 calc(50% - 6px)', minWidth: 150 }}>
                       <Input
                         label="Confirmer *"
                         name="password_confirmation"
@@ -268,14 +266,14 @@ export default function Register() {
                         required
                         style={{ paddingRight: '40px' }}
                       />
-                      <button type="button" onClick={() => setShowConf(!showConf)} style={{ position: 'absolute', right: '12px', top: getError('password_confirmation') ? '38px' : '44px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 0 }}>
+                      <button type="button" onClick={() => setShowConf(!showConf)} style={{ position: 'absolute', right: '12px', top: getError('password_confirmation') ? '28px' : '32px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 0 }}>
                         <i className={`bi ${showConf ? 'bi-eye-slash' : 'bi-eye'}`} />
                       </button>
                     </div>
                   </div>
                 )}
 
-                <div style={{ marginTop: '8px', background: 'var(--bg-surface)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+                <div style={{ marginTop: '4px', background: 'var(--bg-surface)', padding: '12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
                   <Checkbox
                     checked={form.accepte_cgu}
                     onChange={(e) => {
@@ -291,15 +289,7 @@ export default function Register() {
                   {getError('accepte_cgu') && <div style={{ color: 'var(--danger)', fontSize: '12px', marginTop: '4px', marginLeft: '30px' }}>{getError('accepte_cgu')}</div>}
                 </div>
 
-                <Button
-                  type="submit"
-                  variant="primary"
-                  fullWidth
-                  loading={loading}
-                  disabled={!form.accepte_cgu}
-                  icon="bi-person-plus"
-                  style={{ marginTop: '8px', padding: '14px', fontSize: '15px' }}
-                >
+                <Button type="submit" variant="primary" fullWidth loading={loading} disabled={!form.accepte_cgu} style={{ marginTop: '8px', padding: '10px', fontSize: '14px' }}>
                   {activeTab === 'participant' ? "S'inscrire" : "Créer mon compte organisateur"}
                 </Button>
               </form>
@@ -340,7 +330,7 @@ export default function Register() {
                 }} 
                 variant="primary"
                 fullWidth
-                style={{ padding: '14px', fontSize: '15px' }}
+                style={{ padding: '10px', fontSize: '14px' }}
                 iconPosition="right"
                 icon="bi-arrow-right"
               >
@@ -349,14 +339,14 @@ export default function Register() {
             </div>
           )}
 
-          <div style={{ textAlign: 'center', marginTop: '32px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+          <div style={{ textAlign: 'center', marginTop: '16px', fontSize: '14px', color: 'var(--text-secondary)' }}>
             Déjà un compte ?{' '}
             <Link to="/login" style={{ color: 'var(--brand-color)', fontWeight: 700, textDecoration: 'none' }}>
               Se connecter
             </Link>
           </div>
           
-          <div style={{ textAlign: 'center', marginTop: '16px' }}>
+          <div style={{ textAlign: 'center', marginTop: '12px' }}>
             <Link to="/" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
               <i className="bi bi-arrow-left" /> Retour à l'accueil
             </Link>

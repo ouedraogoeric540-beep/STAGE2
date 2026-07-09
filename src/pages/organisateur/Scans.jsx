@@ -57,6 +57,7 @@ export default function OrgScans() {
         ) : statsEvents.length > 0 ? (
           <div className="event-grid" style={{ marginBottom: 32 }}>
             {statsEvents.map((evStat) => {
+              const isIllimite = evStat.capacite_max == -1
               const pct = evStat.capacite_max > 0 ? Math.round((evStat.total_scannes / evStat.capacite_max) * 100) : 0
               return (
                 <div key={evStat.id} className="card" style={{ padding: '16px 14px', borderRadius: 16 }}>
@@ -65,24 +66,26 @@ export default function OrgScans() {
                       {evStat.titre}
                     </div>
                     <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--brand-color)', flexShrink: 0 }}>
-                      {pct}%
+                      {isIllimite ? '∞' : `${pct}%`}
                     </div>
                   </div>
                   
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 600 }}>
                     <span style={{ display: 'flex', alignItems: 'center' }}><i className="bi bi-person-check" style={{ marginRight: 4 }}/>{evStat.total_scannes}</span>
-                    <span>Cap: {evStat.capacite_max}</span>
+                    <span>Cap: {isIllimite ? 'Illimitée' : evStat.capacite_max}</span>
                   </div>
 
-                  <div style={{ width: '100%', height: 8, background: isDark ? '#1e293b' : '#e2e8f0', borderRadius: 4, overflow: 'hidden' }}>
-                    <div style={{ 
-                      width: `${pct}%`, 
-                      height: '100%', 
-                      background: 'linear-gradient(90deg, #3b82f6, #6366f1)', 
-                      borderRadius: 4,
-                      transition: 'width 1s cubic-bezier(0.4, 0, 0.2, 1)'
-                    }} />
-                  </div>
+                  {!isIllimite && (
+                    <div style={{ width: '100%', height: 8, background: isDark ? '#1e293b' : '#e2e8f0', borderRadius: 4, overflow: 'hidden' }}>
+                      <div style={{ 
+                        width: `${pct}%`, 
+                        height: '100%', 
+                        background: 'linear-gradient(90deg, #3b82f6, #6366f1)', 
+                        borderRadius: 4,
+                        transition: 'width 1s cubic-bezier(0.4, 0, 0.2, 1)'
+                      }} />
+                    </div>
+                  )}
                 </div>
               )
             })}

@@ -451,6 +451,12 @@ export default function MesTickets() {
                   <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{selected.evenement?.lieu}</div>
                 </div>
                 <div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Organisateur</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>
+                    {selected.evenement?.organisateur?.prenom ? selected.evenement.organisateur.prenom + ' ' + selected.evenement.organisateur.name : selected.evenement?.organisateur?.name || 'N/A'}
+                  </div>
+                </div>
+                <div>
                   <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Montant Payé</div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: selected.prix_paye == 0 ? '#198754' : 'var(--text-primary)' }}>
                     {selected.prix_paye == 0 ? 'Gratuit' : `${Number(selected.prix_paye).toLocaleString()} FCFA`}
